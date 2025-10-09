@@ -13,18 +13,6 @@ public class BFS {
         this.visitOrder = new ArrayList<>();
     }
 
-    /**
-     * Classe interne pour stocker un voisin avec sa distance
-     */
-    private static class Voisin {
-        int id;
-        int poids;
-
-        Voisin(int id, int poids) {
-            this.id = id;
-            this.poids = poids;
-        }
-    }
 
     /**
      * Parcours BFS avec priorité aux distances minimales.
