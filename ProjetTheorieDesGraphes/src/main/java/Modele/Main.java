@@ -4,7 +4,7 @@ public class Main {
 
     // --- Exemple d'utilisation ---
     public static void main(String[] args) {
-
+        DFS dfs = new DFS();
         BFS bfs = new BFS();
         String[] villes = {
                 "Paris", "Caen", "Rennes", "Nantes", "Bordeaux",
@@ -44,8 +44,7 @@ public class Main {
 
         g.addEdge(8, 9, 40);   // Lyon - Grenoble
 
-        // --- Affichage ---
- feature/origin/implementation_BFS
+
         g.printMatrix();
         bfs.parcours(g,2);
 
@@ -54,6 +53,7 @@ public class Main {
         // --- Arbre couvrant minimal avec Kruskal ---
         System.out.println("\nKruskal");
         Kruskal.run(g);
+        dfs.parcours(g,2);
 
     }
 
