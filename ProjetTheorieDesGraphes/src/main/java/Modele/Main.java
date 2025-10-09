@@ -1,5 +1,7 @@
 package Modele;
 
+import java.util.Scanner;
+
 public class Main {
 
     // --- Exemple d'utilisation ---
@@ -45,6 +47,10 @@ public class Main {
         g.addEdge(8, 9, 40);   // Lyon - Grenoble
 
 
+
+
+        // --- Affichage ---
+
         g.printMatrix();
         bfs.parcours(g,2);
 
@@ -54,6 +60,18 @@ public class Main {
         System.out.println("\nKruskal");
         Kruskal.run(g);
         dfs.parcours(g,2);
+
+        // --- Choix du sommet de départ pour Prim ---
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("\n=== Algorithme de Prim ===");
+        System.out.println("Liste des sommets :");
+        for (int i = 0; i < villes.length; i++) {
+            System.out.println(i + " → " + villes[i]);
+        }
+        System.out.print("\nEntrez l'indice du sommet de départ : ");
+        int start = scanner.nextInt();
+        // --- Exécution de l'algorithme de Prim ---
+        Prim.run(g, start);
 
     }
 
