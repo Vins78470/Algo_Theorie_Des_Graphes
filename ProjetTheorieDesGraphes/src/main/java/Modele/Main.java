@@ -49,54 +49,11 @@ public class Main {
 
 
 
-        // --- Affichage ---
-
-        g.printMatrix();
-        bfs.parcours(g,2);
-
-        System.out.println("BFS");
-        g.printMatrix();
-        // --- Arbre couvrant minimal avec Kruskal ---
-        System.out.println("\nKruskal");
-        Kruskal.run(g);
-        dfs.parcours(g,2);
-
-        // --- Choix du sommet de départ pour Prim ---
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("\n=== Algorithme de Prim ===");
-        System.out.println("Liste des sommets :");
-        for (int i = 0; i < villes.length; i++) {
-            System.out.println(i + " → " + villes[i]);
-        }
-        System.out.print("\nEntrez l'indice du sommet de départ : ");
-        int start = scanner.nextInt();
-        // --- Exécution de l'algorithme de Prim ---
-        Prim.run(g, start);
-
-
-
-
-
-
-        // --- Plus court chemin entre deux villes (Dijkstra) ---
-        System.out.println("\n=== Plus court chemin entre deux villes (Dijkstra) ===");
-
-// Affiche la liste des villes avec leur index
-        System.out.println("Liste des villes :");
-        for (int i = 0; i < villes.length; i++) {
-            System.out.println(i + " → " + villes[i]);
-        }
-
-// Demande du sommet de départ et d'arrivée
-        Scanner scanner2 = new Scanner(System.in);
-        System.out.print("\nEntrez le numéro de la ville de départ : ");
-        int start2 = scanner2.nextInt();
-
-        System.out.print("Entrez le numéro de la ville d'arrivée : ");
-        int end2 = scanner2.nextInt();
-
-// Exécution de l'algorithme de Dijkstra (plus court chemin entre deux villes)
-        Dijkstra.run(g, start2, end2);
+        System.out.println(AlgoFunctions.runBFS(g, 2));
+        System.out.println(AlgoFunctions.runDFS(g, 2));
+        System.out.println(AlgoFunctions.runKruskal(g));
+        System.out.println(AlgoFunctions.runPrim(g, 0));
+        System.out.println(AlgoFunctions.runDijkstra(g, 4, 5));
 
 
     }
