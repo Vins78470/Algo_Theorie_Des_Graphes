@@ -73,6 +73,32 @@ public class Main {
         // --- Exécution de l'algorithme de Prim ---
         Prim.run(g, start);
 
+
+
+
+
+
+        // --- Plus court chemin entre deux villes (Dijkstra) ---
+        System.out.println("\n=== Plus court chemin entre deux villes (Dijkstra) ===");
+
+// Affiche la liste des villes avec leur index
+        System.out.println("Liste des villes :");
+        for (int i = 0; i < villes.length; i++) {
+            System.out.println(i + " → " + villes[i]);
+        }
+
+// Demande du sommet de départ et d'arrivée
+        Scanner scanner2 = new Scanner(System.in);
+        System.out.print("\nEntrez le numéro de la ville de départ : ");
+        int start2 = scanner2.nextInt();
+
+        System.out.print("Entrez le numéro de la ville d'arrivée : ");
+        int end2 = scanner2.nextInt();
+
+// Exécution de l'algorithme de Dijkstra (plus court chemin entre deux villes)
+        Dijkstra.run(g, start2, end2);
+
+
     }
 
 
