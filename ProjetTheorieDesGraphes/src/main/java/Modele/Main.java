@@ -45,7 +45,17 @@ public class Main {
         g.addEdge(8, 9, 40);   // Lyon - Grenoble
 
         // --- Affichage ---
+ feature/origin/implementation_BFS
         g.printMatrix();
         bfs.parcours(g,2);
+
+        System.out.println("BFS");
+        g.printMatrix();
+        // --- Arbre couvrant minimal avec Kruskal ---
+        System.out.println("\nKruskal");
+        Kruskal.run(g);
+
     }
+
+
 }

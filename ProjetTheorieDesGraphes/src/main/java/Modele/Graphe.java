@@ -128,5 +128,10 @@ public class Graphe {
         for (int[] e : edges) if (e.length >= 3) addEdge(e[0], e[1], e[2]);
     }
 
+    public String getVertexName(int index) {
+        return vertexNames[index];
+    }
+
+
 
 }
