@@ -9,5 +9,7 @@ module org.example.projettheoriedesgraphes {
     requires annotations;
 
     opens org.example.projettheoriedesgraphes to javafx.fxml;
+    opens Controller to javafx.fxml;  // 🔹 permet à FXMLLoader d'accéder au contrôleur
+
     exports org.example.projettheoriedesgraphes;
 }
