@@ -1,8 +1,10 @@
 package org.example.projettheoriedesgraphes;
 
+import Controller.Controller;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Control;
 import javafx.stage.Stage;
 import java.io.IOException;
 
@@ -14,10 +16,13 @@ public class VueApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/org/example/projettheoriedesgraphes/vue.fxml")
         );
-
+        Controller controller = new Controller();
+        controller.initialize();
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Projet Théorie des Graphes");
         stage.setScene(scene);
+        // Mettre la fenêtre en plein écran
+        stage.setMaximized(true);
         stage.show();
     }
 }
