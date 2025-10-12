@@ -1,4 +1,0 @@
-Paris 0 500 775 590
-Lyon 500 0 320 580
-Marseille 775 320 0 750
-Bordeaux 590 580 750 0
