@@ -8,6 +8,7 @@ module org.example.projettheoriedesgraphes {
     requires com.almasb.fxgl.all;
     requires annotations;
     requires gs.core;
+   // requires org.example.projettheoriedesgraphes;
 
     opens org.example.projettheoriedesgraphes to javafx.fxml;
     opens Controller to javafx.fxml;  // 🔹 permet à FXMLLoader d'accéder au contrôleur
