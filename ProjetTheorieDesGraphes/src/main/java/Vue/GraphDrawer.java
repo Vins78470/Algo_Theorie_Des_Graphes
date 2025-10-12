@@ -1,13 +1,18 @@
 package Vue;
 
 import Modele.Graphe;
+import Modele.Step;
+import Modele.StepManager;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.SingleGraph;
+
+import java.util.List;
+import java.util.Map;
 
 public class GraphDrawer {
 
@@ -24,16 +29,16 @@ public class GraphDrawer {
         int[][] mat = g.getMatrix();
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                if (mat[i][j] != 0) { // <- maintenant on prend tous les poids non nuls
+                if (mat[i][j] != 0) {
                     gsGraph.addEdge(i + "-" + j, String.valueOf(i), String.valueOf(j));
                 }
             }
         }
     }
 
+    /** Dessine le graphe complet sans états particuliers */
     public void drawGraph(Canvas canvas) {
         if (canvas == null) return;
-
         GraphicsContext gc = canvas.getGraphicsContext2D();
         clearCanvas(gc, canvas);
         double[][] positions = computeNodePositionsSafe(canvas.getWidth(), canvas.getHeight());
@@ -41,6 +46,37 @@ public class GraphDrawer {
         drawEdges(gc, g, positions);
         drawNodes(gc, g, positions);
     }
+
+    /** Dessine un step isolé */
+    public void drawStep(Canvas canvas, Step step) {
+        if (canvas == null || step == null) return;
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        clearCanvas(gc, canvas);
+        double[][] positions = computeNodePositionsSafe(canvas.getWidth(), canvas.getHeight());
+
+        drawEdges(gc, g, positions, step.edgeStates);
+        drawNodes(gc, g, positions, step.nodeStates);
+    }
+
+    /** Dessine tous les steps d’un StepManager avec animation */
+    public void drawStepManagerSequentially(Canvas canvas, StepManager stepManager, int delayMs) {
+        if (canvas == null || stepManager == null) return;
+
+        new Thread(() -> {
+            List<Step> steps = stepManager.getSteps();
+            for (Step step : steps) {
+                javafx.application.Platform.runLater(() -> drawStep(canvas, step));
+                try {
+                    Thread.sleep(delayMs);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }).start();
+    }
+
+    // --- Méthodes privées utilitaires ---
 
     private void clearCanvas(GraphicsContext gc, Canvas canvas) {
         gc.setFill(Color.WHITE);
@@ -69,46 +105,46 @@ public class GraphDrawer {
                 node.setAttribute("y", y);
             }
         }
-
         return pos;
     }
 
     private void drawEdges(GraphicsContext gc, Graphe g, double[][] pos) {
+        drawEdges(gc, g, pos, null);
+    }
+
+    private void drawEdges(GraphicsContext gc, Graphe g, double[][] pos, Map<String, Color> edgeStates) {
         int[][] mat = g.getMatrix();
         int n = mat.length;
-
         gc.setLineWidth(2);
         int edgeCounter = 0;
 
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 int weight = mat[i][j];
-                if (weight != 0) { // <- tous les poids non nuls
+                if (weight != 0) {
                     double x1 = pos[i][0];
                     double y1 = pos[i][1];
                     double x2 = pos[j][0];
                     double y2 = pos[j][1];
 
-                    // Offset pour courbes
                     double dx = x2 - x1;
                     double dy = y2 - y1;
-                    double length = Math.sqrt(dx*dx + dy*dy);
+                    double length = Math.sqrt(dx * dx + dy * dy);
                     double offset = 20 * ((edgeCounter % 2 == 0) ? 1 : -1);
+                    double controlX = (x1 + x2) / 2 - dy / length * offset;
+                    double controlY = (y1 + y2) / 2 + dx / length * offset;
 
-                    double controlX = (x1 + x2)/2 - dy/length * offset;
-                    double controlY = (y1 + y2)/2 + dx/length * offset;
-
-                    // couleur selon poids
-                    gc.setStroke(Color.GRAY);
+                    Color color = (edgeStates != null && edgeStates.containsKey(i + "-" + j)) ?
+                            edgeStates.get(i + "-" + j) : Color.GRAY;
+                    gc.setStroke(color);
 
                     gc.beginPath();
                     gc.moveTo(x1, y1);
                     gc.quadraticCurveTo(controlX, controlY, x2, y2);
                     gc.stroke();
 
-                    // Poids de l'arête
-                    double midX = (x1 + x2)/2 + (controlX - (x1 + x2)/2)/2;
-                    double midY = (y1 + y2)/2 + (controlY - (y1 + y2)/2)/2;
+                    double midX = (x1 + x2) / 2 + (controlX - (x1 + x2) / 2) / 2;
+                    double midY = (y1 + y2) / 2 + (controlY - (y1 + y2) / 2) / 2;
                     drawEdgeWeight(gc, midX, midY, weight, edgeCounter);
 
                     edgeCounter++;
@@ -125,6 +161,10 @@ public class GraphDrawer {
     }
 
     private void drawNodes(GraphicsContext gc, Graphe g, double[][] pos) {
+        drawNodes(gc, g, pos, null);
+    }
+
+    private void drawNodes(GraphicsContext gc, Graphe g, double[][] pos, Map<Integer, Color> nodeStates) {
         int n = g.getMatrix().length;
         gc.setFont(Font.font(20));
         gc.setLineWidth(2);
@@ -134,8 +174,12 @@ public class GraphDrawer {
             double x = pos[i][0];
             double y = pos[i][1];
 
-            gc.setFill(Color.LIGHTBLUE);
+            Color fill = (nodeStates != null && nodeStates.containsKey(i)) ?
+                    nodeStates.get(i) : Color.LIGHTBLUE;
+
+            gc.setFill(fill);
             gc.fillOval(x - nodeRadius, y - nodeRadius, nodeRadius * 2, nodeRadius * 2);
+
             gc.setStroke(Color.DARKBLUE);
             gc.strokeOval(x - nodeRadius, y - nodeRadius, nodeRadius * 2, nodeRadius * 2);
 

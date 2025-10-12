@@ -1,9 +1,8 @@
 package Controller;
 
 import Helpers.FileHelper;
-import Modele.GraphManager;
+import Modele.*;
 import Vue.GraphDrawer;
-import Modele.Graphe;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ComboBox;
@@ -24,6 +23,12 @@ public class Controller {
 
     @FXML
     private TextArea resultTextArea; // pour le résultat final (anciennement stepsTextArea)
+
+    // Algorithme courant sélectionné
+    private Object currentAlgo; // peut être DFS, BFS, Kruskal, Prim, Dijkstra, etc.
+
+    // StepManager pour gérer les étapes du graphe
+    private StepManager stepManager = new StepManager();
 
 
     @FXML
@@ -47,47 +52,68 @@ public class Controller {
         }
     }
 
+
+
     @FXML
     private void onExecuteClicked() {
-        String selectedAlgo = algorithmComboBox.getValue(); // récupère la sélection
-
         if (currentGraph == null) {
             stepsTextArea.setText("Aucun graphe chargé !");
             return;
         }
 
-        String[] res;
+        // Réinitialiser StepManager
+        stepManager.reset();
+
+        String selectedAlgo = algorithmComboBox.getValue();
+        String[] res = null;
 
         switch (selectedAlgo) {
-            case "Parcours en profondeur (DFS)":
-                res = GraphManager.runDFS(currentGraph, 0);
-                break;
-            case "Parcours en largeur (BFS)":
-                res = GraphManager.runBFS(currentGraph, 0);
-                break;
-            case "Kruskal":
-                res = GraphManager.runKruskal(currentGraph);
-                break;
-            case "Prim":
-                res = GraphManager.runPrim(currentGraph, 0);
-                break;
-            case "Dijkstra":
-                res = GraphManager.runDijkstra(currentGraph, 0, 9);
-                break;
-            case "Bellman-Ford":
+            case "Parcours en profondeur (DFS)" -> {
+                currentAlgo = new DFS();
+                // Récupère le StepManager de l'algo
+                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph,0);
+                res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, 0);
+            }
+            case "Parcours en largeur (BFS)" -> {
+                currentAlgo = new BFS();
+                res = GraphManager.runBFS((BFS) currentAlgo, currentGraph,  0);
+            }
+            case "Kruskal" -> {
+                currentAlgo = new Kruskal();
+                res = GraphManager.runKruskal((Kruskal) currentAlgo, currentGraph);
+            }
+            case "Prim" -> {
+                currentAlgo = new Prim();
+                res = GraphManager.runPrim((Prim) currentAlgo, currentGraph, 0);
+            }
+            case "Dijkstra" -> {
+                currentAlgo = new Dijkstra();
+                res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, 0, 9);
+            }
+            case "Bellman-Ford" -> {
                 stepsTextArea.setText("Bellman-Ford non implémenté");
                 return;
-            default:
+            }
+            default -> {
                 stepsTextArea.setText("Sélection invalide !");
                 return;
+            }
         }
 
-        // ✅ On met les étapes dans textArea, et le résultat final dans stepsTextArea
         if (res != null) {
             stepsTextArea.setText(res[0]);       // Étapes
-            resultTextArea.setText(res[1]);  // Résultat final
+            resultTextArea.setText(res[1]);      // Résultat final
         }
+
+        // Dessiner les étapes avec GraphDrawer
+        GraphDrawer gD = new GraphDrawer(currentGraph);
+        gD.drawGraph(graphCanvas);
+        gD.drawStepManagerSequentially(graphCanvas,stepManager,500);
+
     }
+
+
+
 
     // ---------------------------
     // Initialisation automatique
@@ -116,6 +142,7 @@ public class Controller {
             currentGraph = FileHelper.loadGraphFromFile(filepath);
             GraphDrawer gd = new GraphDrawer(currentGraph);
             gd.drawGraph(graphCanvas);
+           // gd.drawStepManagerSequentially(graphCanvas,stepManager,500);
 
             if (stepsTextArea != null) {
                 stepsTextArea.clear();

@@ -1,25 +1,17 @@
 package Modele;
 
+import javafx.scene.paint.Color;
 import java.util.*;
 
 public class DFS {
 
-    private final List<Integer> visitOrder;
+    private final List<Integer> visitOrder = new ArrayList<>();
 
-    public DFS() {
-        this.visitOrder = new ArrayList<>();
-    }
-
-    /**
-     * DFS itératif avec pile, toujours descendre vers l'arête de plus petite distance.
-     *
-     * @param graphe Graphe à parcourir
-     * @param startNode Indice du sommet de départ
-     * @return String représentant le déroulement complet du DFS
-     */
+    // =========================
+    // Partie texte classique
+    // =========================
     public String getResult(Graphe graphe, int startNode) {
         StringBuilder sb = new StringBuilder();
-
         int[][] matrice = graphe.getMatrix();
         String[] noms = getVertexNames(graphe);
 
@@ -33,29 +25,17 @@ public class DFS {
         while (!stack.isEmpty()) {
             int node = stack.peek();
 
-            // Visiter le sommet si pas encore fait
             if (!visited.contains(node)) {
                 visited.add(node);
                 visitOrder.add(node);
                 sb.append("Visite du sommet : ").append(noms[node]).append("\n");
             }
 
-            // Trouver le voisin non visité avec la plus petite distance
-            int minDistance = Integer.MAX_VALUE;
-            int nextNode = -1;
-
-            for (int j = 0; j < matrice[node].length; j++) {
-                if (matrice[node][j] > 0 && !visited.contains(j)
-                        && matrice[node][j] < minDistance) {
-                    minDistance = matrice[node][j];
-                    nextNode = j;
-                }
-            }
-
+            int nextNode = findNextNode(node, matrice, visited);
             if (nextNode != -1) {
                 stack.push(nextNode);
                 sb.append("  Descente vers : ").append(noms[nextNode])
-                        .append(" (distance : ").append(minDistance).append(")\n");
+                        .append(" (distance : ").append(matrice[node][nextNode]).append(")\n");
             } else {
                 stack.pop();
             }
@@ -66,7 +46,60 @@ public class DFS {
         return sb.toString();
     }
 
-    // --- utilitaires ---
+    // =========================
+    // Partie Steps pour animation via StepManager
+    // =========================
+    public StepManager getStepManager(Graphe graphe, int startNode) {
+        StepManager stepManager = new StepManager();
+        int[][] matrice = graphe.getMatrix();
+        Set<Integer> visited = new HashSet<>();
+        Stack<Integer> stack = new Stack<>();
+        visitOrder.clear();
+
+        stack.push(startNode);
+
+        while (!stack.isEmpty()) {
+            int node = stack.peek();
+
+            if (!visited.contains(node)) visitNode(node, visited, stepManager);
+
+            int nextNode = findNextNode(node, matrice, visited);
+            if (nextNode != -1) {
+                traverseEdge(node, nextNode, stepManager);
+                stack.push(nextNode);
+            } else {
+                stack.pop();
+            }
+        }
+
+        return stepManager;
+    }
+
+    // =========================
+    // Fonctions utilitaires
+    // =========================
+    private int findNextNode(int node, int[][] matrice, Set<Integer> visited) {
+        int minDistance = Integer.MAX_VALUE;
+        int nextNode = -1;
+        for (int j = 0; j < matrice[node].length; j++) {
+            if (matrice[node][j] > 0 && !visited.contains(j) && matrice[node][j] < minDistance) {
+                minDistance = matrice[node][j];
+                nextNode = j;
+            }
+        }
+        return nextNode;
+    }
+
+    private void visitNode(int node, Set<Integer> visited, StepManager stepManager) {
+        visited.add(node);
+        visitOrder.add(node);
+        stepManager.markNode(node, Color.RED);
+    }
+
+    private void traverseEdge(int from, int to, StepManager stepManager) {
+        stepManager.markEdge(from, to, Color.PINK);
+    }
+
     private String[] getVertexNames(Graphe g) {
         try {
             var field = Graphe.class.getDeclaredField("vertexNames");
