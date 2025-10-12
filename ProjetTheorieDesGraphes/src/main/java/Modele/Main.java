@@ -49,6 +49,7 @@ public class Main {
 
 
 
+
         // --- Affichage ---
 
         g.printMatrix();
@@ -96,6 +97,12 @@ public class Main {
 
 // Exécution de l'algorithme de Dijkstra (plus court chemin entre deux villes)
         Dijkstra.run(g, start2, end2);
+
+        System.out.println(AlgoFunctions.runBFS(g, 2));
+        System.out.println(AlgoFunctions.runDFS(g, 2));
+        System.out.println(AlgoFunctions.runKruskal(g));
+        System.out.println(AlgoFunctions.runPrim(g, 0));
+        System.out.println(AlgoFunctions.runDijkstra(g, 4, 5));
 
 
     }

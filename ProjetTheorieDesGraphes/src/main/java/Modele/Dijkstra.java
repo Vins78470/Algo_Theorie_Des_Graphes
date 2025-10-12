@@ -3,35 +3,36 @@ package Modele;
 import java.util.*;
 
 /**
- * Algorithme de Dijkstra – version : plus court chemin entre deux villes données.
+ * Algorithme de Dijkstra :
+ * Calcule le plus court chemin entre deux sommets dans un graphe pondéré.
+ * Retourne une String affichable dans la console ou le front.
  */
 public class Dijkstra {
 
-    /**
-     * Calcule et affiche le plus court chemin entre deux sommets du graphe.
-     *
-     * @param g le graphe pondéré non orienté
-     * @param startIndex index du sommet de départ
-     * @param endIndex index du sommet d'arrivée
-     */
-    public static void run(Graphe g, int startIndex, int endIndex) {
+    public static String getResult(Graphe g, int start, int end) {
+        StringBuilder sb = new StringBuilder();
+
         int[][] mat = g.getMatrix();
         int n = mat.length;
 
-        int[] dist = new int[n];      // distances minimales
+        // Initialisation
+        int[] dist = new int[n];
+        int[] parent = new int[n];
         boolean[] visited = new boolean[n];
-        int[] parent = new int[n];    // pour reconstruire le chemin
-
         Arrays.fill(dist, Integer.MAX_VALUE);
         Arrays.fill(parent, -1);
-        dist[startIndex] = 0;
+        dist[start] = 0;
 
-        // --- Boucle principale ---
+        sb.append("Sommet de départ : ").append(g.getVertexName(start)).append("\n");
+        sb.append("Sommet d'arrivée : ").append(g.getVertexName(end)).append("\n\n");
+
+        // --- Algorithme principal ---
         for (int count = 0; count < n - 1; count++) {
-            int u = minDistance(dist, visited, n);
-            if (u == -1) break;
+            int u = minDistance(dist, visited);
+            if (u == -1) break; // tous les sommets atteignables ont été traités
             visited[u] = true;
 
+            // Mise à jour des distances
             for (int v = 0; v < n; v++) {
                 if (!visited[v] && mat[u][v] != 0 && dist[u] != Integer.MAX_VALUE
                         && dist[u] + mat[u][v] < dist[v]) {
@@ -41,22 +42,26 @@ public class Dijkstra {
             }
         }
 
-        // --- Affichage du résultat ---
-        System.out.println("\n=== Plus court chemin (Dijkstra) ===");
-        if (dist[endIndex] == Integer.MAX_VALUE) {
-            System.out.println("Aucun chemin entre " + g.getVertexName(startIndex)
-                    + " et " + g.getVertexName(endIndex));
+        // --- Construction du résultat ---
+        if (dist[end] == Integer.MAX_VALUE) {
+            sb.append("Aucun chemin trouvé entre ")
+                    .append(g.getVertexName(start))
+                    .append(" et ")
+                    .append(g.getVertexName(end))
+                    .append(".\n");
         } else {
-            System.out.println("De " + g.getVertexName(startIndex) + " à " + g.getVertexName(endIndex) + " :");
-            System.out.println("→ Distance minimale : " + dist[endIndex]);
-            System.out.println("→ Chemin : " + getPath(g, parent, endIndex));
+            sb.append("Distance minimale : ").append(dist[end]).append("\n");
+            sb.append("Chemin le plus court : ").append(reconstructPath(g, parent, start, end)).append("\n");
         }
+
+        return sb.toString();
     }
 
-    /** Trouve le sommet non visité avec la plus petite distance */
-    private static int minDistance(int[] dist, boolean[] visited, int n) {
-        int min = Integer.MAX_VALUE, minIndex = -1;
-        for (int v = 0; v < n; v++) {
+    // Trouve le sommet non visité avec la plus petite distance
+    private static int minDistance(int[] dist, boolean[] visited) {
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+        for (int v = 0; v < dist.length; v++) {
             if (!visited[v] && dist[v] <= min) {
                 min = dist[v];
                 minIndex = v;
@@ -65,14 +70,20 @@ public class Dijkstra {
         return minIndex;
     }
 
-    /** Construit le chemin complet */
-    private static String getPath(Graphe g, int[] parent, int j) {
-        List<String> path = new ArrayList<>();
-        while (j != -1) {
-            path.add(g.getVertexName(j));
-            j = parent[j];
+    // Reconstruit le chemin à partir du tableau des parents
+    private static String reconstructPath(Graphe g, int[] parent, int start, int end) {
+        List<Integer> path = new ArrayList<>();
+        for (int v = end; v != -1; v = parent[v]) {
+            path.add(v);
         }
         Collections.reverse(path);
-        return String.join(" → ", path);
+
+        List<String> names = new ArrayList<>();
+        for (int v : path) names.add(g.getVertexName(v));
+
+        // Vérifie que le chemin commence bien par le sommet de départ
+        if (path.get(0) != start) return "Aucun chemin disponible.";
+
+        return String.join(" → ", names);
     }
 }

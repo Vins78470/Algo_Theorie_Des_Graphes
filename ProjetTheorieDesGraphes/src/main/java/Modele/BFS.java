@@ -13,28 +13,33 @@ public class BFS {
         this.visitOrder = new ArrayList<>();
     }
 
-
     /**
      * Parcours BFS avec priorité aux distances minimales.
      * À chaque niveau, on ajoute TOUS les voisins triés par distance croissante.
      *
      * @param graphe le graphe à parcourir
      * @param startNode indice du sommet de départ
+     * @return String représentant le déroulement du parcours
      */
-    public void parcours(Graphe graphe, int startNode) {
+    public String getResult(Graphe graphe, int startNode) {
+        StringBuilder sb = new StringBuilder();
+
         int[][] matrice = graphe.getMatrix();
         String[] noms = getVertexNames(graphe);
+
+        queue.clear();
+        visited.clear();
+        visitOrder.clear();
 
         queue.add(startNode);
         visited.add(startNode);
         visitOrder.add(startNode);
 
-        System.out.println("Départ depuis : " + noms[startNode]);
-        System.out.println();
+        sb.append("Départ depuis : ").append(noms[startNode]).append("\n\n");
 
         while (!queue.isEmpty()) {
             int node = queue.poll();
-            System.out.println("Visite du sommet : " + noms[node]);
+            sb.append("Visite du sommet : ").append(noms[node]).append("\n");
 
             // Collecter tous les voisins non visités
             List<Voisin> voisins = new ArrayList<>();
@@ -48,27 +53,28 @@ public class BFS {
             // Trier les voisins par distance croissante
             voisins.sort(Comparator.comparingInt(v -> v.poids));
 
-            // Ajouter TOUS les voisins triés à la queue
             if (!voisins.isEmpty()) {
-                System.out.println("  Voisins ajoutés (ordre croissant) :");
+                sb.append("  Voisins ajoutés (ordre croissant) :\n");
                 for (Voisin v : voisins) {
                     queue.add(v.id);
                     visited.add(v.id);
                     visitOrder.add(v.id);
-                    System.out.println("    → " + noms[v.id] + " (distance : " + v.poids + ")");
+                    sb.append("    → ").append(noms[v.id])
+                            .append(" (distance : ").append(v.poids).append(")\n");
                 }
             } else {
-                System.out.println("  Aucun nouveau voisin");
+                sb.append("  Aucun nouveau voisin\n");
             }
-            System.out.println();
+            sb.append("\n");
         }
 
-        System.out.println("Parcours terminé !");
-        System.out.println("Ordre de visite : " + formatVisited(noms));
+        sb.append("Parcours terminé !\n");
+        sb.append("Ordre de visite : ").append(formatVisited(noms)).append("\n");
+
+        return sb.toString();
     }
 
     // --- Méthodes utilitaires ---
-
     private String[] getVertexNames(Graphe g) {
         try {
             var field = Graphe.class.getDeclaredField("vertexNames");
@@ -81,16 +87,7 @@ public class BFS {
 
     private String formatVisited(String[] noms) {
         List<String> lst = new ArrayList<>();
-        for (int v : visitOrder) {
-            lst.add(noms[v]);
-        }
+        for (int v : visitOrder) lst.add(noms[v]);
         return String.join(" → ", lst);
-    }
-
-    /**
-     * Méthode pour obtenir la liste ordonnée des sommets visités
-     */
-    public List<Integer> getVisitedOrder() {
-        return new ArrayList<>(visitOrder);
     }
 }
