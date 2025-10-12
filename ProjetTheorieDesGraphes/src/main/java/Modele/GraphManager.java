@@ -38,61 +38,64 @@ public class GraphManager {
         g.addEdge(7, 9, 75);
         g.addEdge(8, 9, 40);
 
-        // Dessine le graphe sur le Canvas si fourni
+        // Dessine le graphe sur le Canvas
         if (graphCanvas != null) {
             GraphDrawer gd = new GraphDrawer(g);
             gd.drawGraph(graphCanvas);
         }
 
-        // Affiche le graphe dans la TextArea si fourni
+        // Affiche le graphe dans la TextArea
         if (stepsTextArea != null) {
             stepsTextArea.clear();
             stepsTextArea.setText(g.toString());
         }
 
-        return g; // ✅ ON RETOURNE LE GRAPHE ICI
+        return g;
     }
 
-
     /** --- BFS --- */
-    public static String runBFS(Graphe g, int start) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Parcours en largeur (BFS) ===\n");
-        BFS bfs = new BFS();
-        sb.append(bfs.getResult(g, start));
-        return sb.toString();
+    public static String[] runBFS(Graphe g, int start) {
+        String full = "=== Parcours en largeur (BFS) ===\n" + new BFS().getResult(g, start);
+        return split(full);
     }
 
     /** --- DFS --- */
-    public static String runDFS(Graphe g, int start) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Parcours en profondeur (DFS) ===\n");
-        DFS dfs = new DFS();
-        sb.append(dfs.getResult(g, start));
-        return sb.toString();
+    public static String[] runDFS(Graphe g, int start) {
+        String full = "=== Parcours en profondeur (DFS) ===\n" + new DFS().getResult(g, start);
+        return split(full);
     }
 
     /** --- Kruskal --- */
-    public static String runKruskal(Graphe g) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Algorithme de Kruskal ===\n");
-        sb.append(Kruskal.getResult(g));
-        return sb.toString();
+    public static String[] runKruskal(Graphe g) {
+        String full = "=== Algorithme de Kruskal ===\n" + Kruskal.getResult(g);
+        return split(full);
     }
 
     /** --- Prim --- */
-    public static String runPrim(Graphe g, int start) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Algorithme de Prim ===\n");
-        sb.append(Prim.getResult(g, start));
-        return sb.toString();
+    public static String[] runPrim(Graphe g, int start) {
+        String full = "=== Algorithme de Prim ===\n" + Prim.getResult(g, start);
+        return split(full);
     }
 
     /** --- Dijkstra --- */
-    public static String runDijkstra(Graphe g, int start, int end) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Plus court chemin entre deux villes (Dijkstra) ===\n");
-        sb.append(Dijkstra.getResult(g, start, end));
-        return sb.toString();
+    public static String[] runDijkstra(Graphe g, int start, int end) {
+        String full = "=== Plus court chemin entre deux villes (Dijkstra) ===\n" + Dijkstra.getResult(g, start, end);
+        return split(full);
     }
+
+
+    private static String[] split(String fullText) {
+        String[] lines = fullText.split("\n");
+        if (lines.length == 0) return new String[] { "", "" };
+
+        String result = lines[lines.length - 1]; // Dernière ligne = résultat
+        StringBuilder steps = new StringBuilder();
+
+        for (int i = 0; i < lines.length - 1; i++) {
+            steps.append(lines[i]).append("\n");
+        }
+
+        return new String[] { steps.toString(), result };
+    }
+
 }

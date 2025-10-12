@@ -51,7 +51,9 @@ public class FileHelper {
 
             int[] distances = new int[parts.length - 1];
             for (int i = 1; i < parts.length; i++) {
-                distances[i - 1] = Integer.parseInt(parts[i]);
+                // nettoyage des espaces et remplacement d’éventuels tirets Unicode
+                String value = parts[i].trim().replace("–", "-").replace("−", "-");
+                distances[i - 1] = Integer.parseInt(value);
             }
             rows.add(distances);
         }
@@ -63,6 +65,7 @@ public class FileHelper {
         for (int i = 0; i < n; i++) {
             int[] row = rows.get(i);
             for (int j = 0; j < row.length; j++) {
+                // ajouter même les poids négatifs, sauf si c’est 0 (pas de lien)
                 if (row[j] != 0) {
                     g.addEdge(i, j, row[j]);
                 }
@@ -71,5 +74,6 @@ public class FileHelper {
 
         return g;
     }
+
 
 }

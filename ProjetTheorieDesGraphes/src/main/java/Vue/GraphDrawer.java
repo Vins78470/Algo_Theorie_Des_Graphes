@@ -24,7 +24,9 @@ public class GraphDrawer {
         int[][] mat = g.getMatrix();
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                if (mat[i][j] > 0) gsGraph.addEdge(i + "-" + j, String.valueOf(i), String.valueOf(j));
+                if (mat[i][j] != 0) { // <- maintenant on prend tous les poids non nuls
+                    gsGraph.addEdge(i + "-" + j, String.valueOf(i), String.valueOf(j));
+                }
             }
         }
     }
@@ -36,7 +38,7 @@ public class GraphDrawer {
         clearCanvas(gc, canvas);
         double[][] positions = computeNodePositionsSafe(canvas.getWidth(), canvas.getHeight());
 
-       drawEdges(gc, g, positions);
+        drawEdges(gc, g, positions);
         drawNodes(gc, g, positions);
     }
 
@@ -53,7 +55,6 @@ public class GraphDrawer {
         double centerY = height / 2;
         double radius = Math.min(width, height) / 2.3;
 
-
         for (int i = 0; i < n; i++) {
             double angle = 2 * Math.PI * i / n;
             double x = centerX + radius * Math.cos(angle);
@@ -62,7 +63,6 @@ public class GraphDrawer {
             pos[i][0] = x;
             pos[i][1] = y;
 
-            // On met à jour GraphStream pour la cohérence
             Node node = gsGraph.getNode(String.valueOf(i));
             if (node != null) {
                 node.setAttribute("x", x);
@@ -73,18 +73,17 @@ public class GraphDrawer {
         return pos;
     }
 
-
     private void drawEdges(GraphicsContext gc, Graphe g, double[][] pos) {
         int[][] mat = g.getMatrix();
         int n = mat.length;
 
-        gc.setStroke(Color.GRAY);
         gc.setLineWidth(2);
-
         int edgeCounter = 0;
+
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                if (mat[i][j] > 0) {
+                int weight = mat[i][j];
+                if (weight != 0) { // <- tous les poids non nuls
                     double x1 = pos[i][0];
                     double y1 = pos[i][1];
                     double x2 = pos[j][0];
@@ -99,6 +98,9 @@ public class GraphDrawer {
                     double controlX = (x1 + x2)/2 - dy/length * offset;
                     double controlY = (y1 + y2)/2 + dx/length * offset;
 
+                    // couleur selon poids
+                    gc.setStroke(Color.GRAY);
+
                     gc.beginPath();
                     gc.moveTo(x1, y1);
                     gc.quadraticCurveTo(controlX, controlY, x2, y2);
@@ -107,7 +109,7 @@ public class GraphDrawer {
                     // Poids de l'arête
                     double midX = (x1 + x2)/2 + (controlX - (x1 + x2)/2)/2;
                     double midY = (y1 + y2)/2 + (controlY - (y1 + y2)/2)/2;
-                    drawEdgeWeight(gc, midX, midY, mat[i][j], edgeCounter);
+                    drawEdgeWeight(gc, midX, midY, weight, edgeCounter);
 
                     edgeCounter++;
                 }

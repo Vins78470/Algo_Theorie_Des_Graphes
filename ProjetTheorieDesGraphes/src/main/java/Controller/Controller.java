@@ -20,10 +20,11 @@ public class Controller {
     private MenuItem IdOpenGraph;
 
     @FXML
-    private TextArea textArea; // steps
+    private TextArea stepsTextArea; // pour les étapes (anciennement textArea)
 
     @FXML
-    private TextArea stepsTextArea; // résultat algo
+    private TextArea resultTextArea; // pour le résultat final (anciennement stepsTextArea)
+
 
     @FXML
     private ComboBox<String> algorithmComboBox;
@@ -55,33 +56,45 @@ public class Controller {
             return;
         }
 
+        String[] res;
+
         switch (selectedAlgo) {
             case "Parcours en profondeur (DFS)":
-                stepsTextArea.setText(GraphManager.runDFS(currentGraph, 0));
+                res = GraphManager.runDFS(currentGraph, 0);
                 break;
             case "Parcours en largeur (BFS)":
-                stepsTextArea.setText(GraphManager.runBFS(currentGraph, 0));
+                res = GraphManager.runBFS(currentGraph, 0);
                 break;
             case "Kruskal":
-                stepsTextArea.setText(GraphManager.runKruskal(currentGraph));
+                res = GraphManager.runKruskal(currentGraph);
                 break;
             case "Prim":
-                stepsTextArea.setText(GraphManager.runPrim(currentGraph, 0));
+                res = GraphManager.runPrim(currentGraph, 0);
                 break;
             case "Dijkstra":
-                stepsTextArea.setText(GraphManager.runDijkstra(currentGraph, 0, 9));
+                res = GraphManager.runDijkstra(currentGraph, 0, 9);
                 break;
             case "Bellman-Ford":
                 stepsTextArea.setText("Bellman-Ford non implémenté");
-                break;
+                return;
             default:
                 stepsTextArea.setText("Sélection invalide !");
+                return;
+        }
+
+        // ✅ On met les étapes dans textArea, et le résultat final dans stepsTextArea
+        if (res != null) {
+            stepsTextArea.setText(res[0]);       // Étapes
+            resultTextArea.setText(res[1]);  // Résultat final
         }
     }
 
     // ---------------------------
     // Initialisation automatique
     // ---------------------------
+    // ---------------------------
+// Initialisation automatique
+// ---------------------------
     @FXML
     public void initialize() {
         String defaultGraphFile = "../graphes/graphe.txt";
@@ -90,26 +103,28 @@ public class Controller {
         if (f.exists()) {
             loadAndDrawGraph(defaultGraphFile);
         } else {
-            currentGraph = GraphManager.initDefaultGraph(graphCanvas, textArea);
+            // initDefaultGraph retourne maintenant le graphe et met à jour stepsTextArea
+            currentGraph = GraphManager.initDefaultGraph(graphCanvas, stepsTextArea);
         }
     }
 
     // ---------------------------
-    // Charger et dessiner un fichier
-    // ---------------------------
+// Charger et dessiner un fichier
+// ---------------------------
     private void loadAndDrawGraph(String filepath) {
         try {
             currentGraph = FileHelper.loadGraphFromFile(filepath);
             GraphDrawer gd = new GraphDrawer(currentGraph);
             gd.drawGraph(graphCanvas);
 
-            if (textArea != null) {
-                textArea.clear();
-                textArea.setText(currentGraph.toString());
+            if (stepsTextArea != null) {
+                stepsTextArea.clear();
+                stepsTextArea.setText(currentGraph.toString());
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }
