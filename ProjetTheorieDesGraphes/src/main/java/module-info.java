@@ -8,12 +8,13 @@ module org.example.projettheoriedesgraphes {
     requires com.almasb.fxgl.all;
     requires annotations;
     requires gs.core;
-   // requires org.example.projettheoriedesgraphes;
+    requires junit; // Pour JUnit 4 (si tu utilises JUnit 5 ce serait `requires org.junit.jupiter.api;`)
 
     opens org.example.projettheoriedesgraphes to javafx.fxml;
-    opens Controller to javafx.fxml;  // 🔹 permet à FXMLLoader d'accéder au contrôleur
-
-    exports org.example.projettheoriedesgraphes;
+    opens Controller to javafx.fxml;
     opens Helpers to javafx.fxml;
     opens Vue to javafx.fxml;
+
+    exports Tests; // ✅ rend le package des tests accessible (par exemple à IntelliJ / Maven / Gradle)
+    exports org.example.projettheoriedesgraphes;
 }

@@ -131,7 +131,17 @@ public class Graphe {
     public String getVertexName(int index) {
         return vertexNames[index];
     }
+    /** Retourne le nombre total de sommets */
+    public int getNbSommets() {
+        return n;
+    }
 
+    /** Retourne le poids entre deux sommets (0 si aucune arête) */
+    public int getPoids(int u, int v) {
+        checkVertex(u);
+        checkVertex(v);
+        return mat[u][v];
+    }
 
 
 }
