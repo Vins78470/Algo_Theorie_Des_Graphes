@@ -27,7 +27,7 @@ public class GraphManager {
 
         if (stepsTextArea != null) {
             stepsTextArea.clear();
-            stepsTextArea.setText(g.toString());
+
         }
 
         return g;
@@ -75,4 +75,16 @@ public class GraphManager {
 
         return new String[] { steps.toString(), result };
     }
+
+    /** Vérifie si le graphe contient des arêtes avec poids négatif */
+    public static boolean hasNegativeWeight(Graphe g) {
+        int[][] mat = g.getMatrix();
+        for (int i = 0; i < mat.length; i++) {
+            for (int j = 0; j < mat[i].length; j++) {
+                if (mat[i][j] < 0) return true;
+            }
+        }
+        return false;
+    }
+
 }
