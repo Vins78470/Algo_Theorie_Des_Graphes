@@ -30,18 +30,27 @@ public class Main {
 
         // === Affichage de la matrice d’adjacence ===
         g.printMatrix();
+        g.printMatrix();
 
-        // === Choix du sommet de départ ===
         Scanner sc = new Scanner(System.in);
-        System.out.print("\nEntrez le sommet de départ (ex: s1, s2, s3...) : ");
+        System.out.print("\nEntrez le sommet de départ (ex: s1) : ");
         String source = sc.nextLine().trim();
+        System.out.print("Entrez le sommet d’arrivée (ex: s6) : ");
+        String destination = sc.nextLine().trim();
 
-        // === Exécution de Bellman-Ford ===
         BellmanFord bf = new BellmanFord(new StepManager());
-        String resultat = bf.run(g, source);
+        String resultat = bf.run(g, source, destination);
 
-        // === Affichage du résultat final ===
         System.out.println("\n" + resultat);
         System.out.println("=== Fin du programme ===");
+
+
+
+/*:
+        FloydWarshall fw = new FloydWarshall();
+        String[] result = GraphManager.runFloydWarshall(fw, g);
+        System.out.println(result[0]);  // étapes ou matrice complète
+        System.out.println(result[1]);  // résultat résumé (dernier élément)
+*/
     }
 }
