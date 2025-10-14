@@ -12,17 +12,17 @@ public class VueApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Chemin vers ton fichier FXML (dans resources)
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/org/example/projettheoriedesgraphes/vue.fxml")
         );
-        Controller controller = new Controller();
-        controller.initialize();
+
+        // Charge la vue et récupère le root
         Scene scene = new Scene(fxmlLoader.load());
+
         stage.setTitle("Projet Théorie des Graphes");
         stage.setScene(scene);
-        // Mettre la fenêtre en plein écran
         stage.setMaximized(true);
         stage.show();
     }
+
 }

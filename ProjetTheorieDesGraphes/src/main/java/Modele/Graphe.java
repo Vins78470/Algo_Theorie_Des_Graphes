@@ -1,5 +1,6 @@
 package Modele;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -136,6 +137,9 @@ public class Graphe {
         return n;
     }
 
+    public List<String> getAllVertexNames() {
+        return Arrays.asList(vertexNames);
+    }
     /** Retourne le poids entre deux sommets (0 si aucune arête) */
     public int getPoids(int u, int v) {
         checkVertex(u);

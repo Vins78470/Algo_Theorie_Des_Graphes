@@ -26,12 +26,12 @@
             </menus>
         </MenuBar>
 
-        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" VBox.vgrow="ALWAYS">
+        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefWidth="1533.0" VBox.vgrow="ALWAYS">
             <children>
-                <Canvas fx:id="graphCanvas" height="861.0" layoutY="1.0" width="1116.0" AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="410.0" AnchorPane.topAnchor="1.0" />
+                <Canvas fx:id="graphCanvas" height="893.0" layoutY="7.0" width="1116.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="410.0" AnchorPane.topAnchor="7.0" />
 
                 <!-- ComboBox pour choisir l'algorithme -->
-                <ComboBox fx:id="algorithmComboBox" layoutX="1250.0" layoutY="60.0" prefHeight="60.0" prefWidth="154.0" promptText="Algorithmes">
+                <ComboBox fx:id="algorithmComboBox" layoutX="1254.0" layoutY="41.0" prefHeight="60.0" prefWidth="154.0" promptText="Algorithmes">
                     <items>
                         <FXCollections fx:factory="observableArrayList">
                             <String fx:value="Parcours en profondeur (DFS)" />
@@ -40,20 +40,25 @@
                             <String fx:value="Prim" />
                             <String fx:value="Dijkstra" />
                             <String fx:value="Bellman-Ford" />
-                            <String fx:value="Floyd" />
                         </FXCollections>
                     </items>
                 </ComboBox>
 
-                <Button fx:id="executeButton" layoutX="1250.0" layoutY="173.0" mnemonicParsing="false" onAction="#onExecuteClicked" prefHeight="51.0" prefWidth="143.0" text="Executer" />
+                <Button fx:id="executeButton" layoutX="1242.0" layoutY="217.0" mnemonicParsing="false" onAction="#onExecuteClicked" prefHeight="51.0" prefWidth="143.0" text="Executer" />
 
                 <Text layoutX="1183.0" layoutY="308.0" scaleX="2.0" scaleY="2.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Etapes :" />
 
-                <TextArea fx:id="stepsTextArea" editable="false" layoutX="1135.0" layoutY="329.0" prefHeight="205.0" prefWidth="379.0" />
+                <TextArea fx:id="stepsTextArea" editable="false" layoutX="1135.0" layoutY="329.0" prefHeight="205.0" prefWidth="391.0" />
 
                 <Text layoutX="1178.0" layoutY="584.0" scaleX="2.0" scaleY="2.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Résultat :" />
 
                 <TextArea fx:id="resultTextArea" editable="false" layoutX="1135.0" layoutY="607.0" prefHeight="51.0" prefWidth="304.0" />
+
+
+                <ComboBox id="startComboBox" fx:id="startComboBox" layoutX="1183.0" layoutY="155.0" prefHeight="25.0" prefWidth="81.0" promptText="Départ" />
+                <ComboBox fx:id="endComboBox" layoutX="1364.0" layoutY="155.0" prefHeight="25.0" prefWidth="81.0" promptText="Arrivée" />
+            <Text layoutX="1186.0" layoutY="143.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Départ : " wrappingWidth="74.087890625" />
+            <Text layoutX="1367.0" layoutY="143.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Arrivée :" wrappingWidth="74.087890625" />
             </children>
         </AnchorPane>
     </children>
