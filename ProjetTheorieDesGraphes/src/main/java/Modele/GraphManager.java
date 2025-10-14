@@ -77,7 +77,8 @@ public class GraphManager {
     }
 
     /** Vérifie si le graphe contient des arêtes avec poids négatif */
-    public static boolean hasNegativeWeight(Graphe g) {
+    public static boolean hasNegativeWeight(Graphe g)
+    {
         int[][] mat = g.getMatrix();
         for (int i = 0; i < mat.length; i++) {
             for (int j = 0; j < mat[i].length; j++) {
@@ -85,9 +86,11 @@ public class GraphManager {
             }
         }
         return false;}
+
     /** --- Bellman-Ford (version départ/arrivée) --- */
     public static String[] runBellmanFord(BellmanFord bfAlgo, Graphe g, int start, int end) {
         String full = "=== Algorithme de Bellman-Ford ===\n" + bfAlgo.getResult(g, start, end);
+
         return split(full);
     }
 
