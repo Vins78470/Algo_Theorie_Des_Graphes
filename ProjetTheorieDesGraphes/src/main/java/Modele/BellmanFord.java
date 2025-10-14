@@ -3,47 +3,41 @@ package Modele;
 import java.util.*;
 
 /**
- * Algorithme de Bellman-Ford (version EFREI, sans affichage console)
- * -------------------------------------------------------
- * Retourne le résultat sous forme de texte pour être affiché ailleurs (GUI, console, etc.)
+ * Algorithme de Bellman-Ford (cours EFREI)
+ * Version ciblée : plus court chemin entre deux sommets choisis.
  */
 public class BellmanFord {
 
     public BellmanFord(StepManager stepManager) {
-        // constructeur conservé pour compatibilité graphique
+        // Constructeur conservé pour compatibilité graphique
     }
 
     /**
-     * L'utilisateur choisit le sommet de départ (nom, ex: "s1") et l'algo renvoie le résultat complet.
-     * @param g Graphe sur lequel exécuter Bellman-Ford
-     * @param sourceName Nom du sommet de départ (ex: "s1")
-     * @return Résultat au format du cours EFREI
+     * Lance Bellman-Ford entre deux sommets donnés par leur nom (ex: "s1", "s6")
      */
-    public String run(Graphe g, String sourceName) {
+    public String run(Graphe g, String sourceName, String destName) {
         int n = g.getMatrix().length;
         String[] noms = new String[n];
         for (int i = 0; i < n; i++) noms[i] = g.getVertexName(i);
 
-        // Conversion du nom en index
-        int start = -1;
+        // Conversion noms → indices
+        int start = -1, end = -1;
         for (int i = 0; i < n; i++) {
-            if (noms[i].equalsIgnoreCase(sourceName)) {
-                start = i;
-                break;
-            }
+            if (noms[i].equalsIgnoreCase(sourceName)) start = i;
+            if (noms[i].equalsIgnoreCase(destName)) end = i;
+        }
+//jsuis scillé mon reuf
+        if (start == -1 || end == -1) {
+            return "Sommet invalide. Exemples valides : s1, s2, s3, ...";
         }
 
-        if (start == -1) {
-            return "Sommet invalide : " + sourceName + " (ex: s1, s2...).";
-        }
-
-        return getResult(g, start);
+        return getResult(g, start, end);
     }
 
     /**
-     * Calcule les plus courts chemins depuis une source donnée (index du sommet).
+     * Calcule le plus court chemin de start à end avec Bellman-Ford
      */
-    public String getResult(Graphe g, int start) {
+    public String getResult(Graphe g, int start, int end) {
         int n = g.getMatrix().length;
         int[][] mat = g.getMatrix();
         String[] noms = new String[n];
@@ -67,37 +61,38 @@ public class BellmanFord {
             }
         }
 
-        // --- Détection cycle absorbant ---
+        // --- Détection de cycle absorbant ---
         for (int u = 0; u < n; u++) {
             for (int v = 0; v < n; v++) {
                 if (mat[u][v] != 0 && dist[u] + mat[u][v] < dist[v]) {
-                    return "⚠️ Le graphe contient un cycle absorbant (poids négatif).";
+                    return "Le graphe contient un cycle absorbant (poids négatif).";
                 }
             }
         }
 
-        // --- Construction du résultat texte ---
-        StringBuilder sb = new StringBuilder();
-        sb.append("Les PCCs (depuis ").append(noms[start]).append(") :\n");
-
-        for (int i = 0; i < n; i++) {
-            if (i == start || dist[i] == Double.POSITIVE_INFINITY) continue;
-
-            // Reconstruction du chemin à rebours
-            List<String> chemin = new ArrayList<>();
-            int v = i;
-            while (v != -1) {
-                chemin.add(noms[v]);
-                v = pere[v];
-            }
-
-            // Format : s4 ← s3 ← s5 ← s1 → PCC = ...
-            for (int j = 0; j < chemin.size(); j++) {
-                sb.append(chemin.get(j));
-                if (j < chemin.size() - 1) sb.append(" ← ");
-            }
-            sb.append("   →   PCC = ").append((int) dist[i]).append("\n");
+        // --- Cas où aucun chemin n’existe ---
+        if (dist[end] == Double.POSITIVE_INFINITY) {
+            return "Aucun chemin n’existe entre " + noms[start] + " et " + noms[end] + ".";
         }
+
+        // --- Reconstruction du chemin à rebours ---
+        List<String> chemin = new ArrayList<>();
+        int v = end;
+        while (v != -1) {
+            chemin.add(noms[v]);
+            v = pere[v];
+        }
+
+        // --- Format du résultat ---
+        StringBuilder sb = new StringBuilder();
+        sb.append("Chemin le plus court de ").append(noms[start]).append(" à ").append(noms[end]).append(" :\n");
+
+        for (int j = 0; j < chemin.size(); j++) {
+            sb.append(chemin.get(j));
+            if (j < chemin.size() - 1) sb.append(" ← ");
+        }
+
+        sb.append("   →   PCC = ").append((int) dist[end]).append("\n");
 
         return sb.toString();
     }

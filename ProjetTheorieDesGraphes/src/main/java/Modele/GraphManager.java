@@ -84,11 +84,19 @@ public class GraphManager {
                 if (mat[i][j] < 0) return true;
             }
         }
-        return false;
-    /** --- Bellman-Ford --- */
-    public static String[] runBellmanFord(BellmanFord bfAlgo, Graphe g, int start) {
-        String full = "=== Algorithme de Bellman-Ford ===\n" + bfAlgo.getResult(g, start);
+        return false;}
+    /** --- Bellman-Ford (version départ/arrivée) --- */
+    public static String[] runBellmanFord(BellmanFord bfAlgo, Graphe g, int start, int end) {
+        String full = "=== Algorithme de Bellman-Ford ===\n" + bfAlgo.getResult(g, start, end);
         return split(full);
     }
+
+
+    /** --- Floyd-Warshall --- */
+    public static String[] runFloydWarshall(FloydWarshall fwAlgo, Graphe g) {
+        String full = "=== Algorithme de Floyd-Warshall ===\n" + fwAlgo.run(g);
+        return split(full);
+    }
+
 
 }
