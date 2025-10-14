@@ -19,17 +19,10 @@ public class Controller {
     private MenuItem IdOpenGraph;
 
     @FXML
-    private TextArea stepsTextArea; // pour les étapes (anciennement textArea)
+    private TextArea stepsTextArea; // pour les étapes
 
     @FXML
-    private TextArea resultTextArea; // pour le résultat final (anciennement stepsTextArea)
-
-    // Algorithme courant sélectionné
-    private Object currentAlgo; // peut être DFS, BFS, Kruskal, Prim, Dijkstra, etc.
-
-    // StepManager pour gérer les étapes du graphe
-    private StepManager stepManager = new StepManager();
-
+    private TextArea resultTextArea; // pour le résultat final
 
     @FXML
     private ComboBox<String> algorithmComboBox;
@@ -37,8 +30,30 @@ public class Controller {
     @FXML
     private Canvas graphCanvas;
 
-    // On stocke le graphe courant ici
+    // Algo courant
+    private Object currentAlgo;
+
+    // StepManager pour l’animation
+    private StepManager stepManager = new StepManager();
+
+    // Graphe courant
     private Graphe currentGraph;
+
+    // ---------------------------
+    // Initialisation automatique
+    // ---------------------------
+    @FXML
+    public void initialize() {
+        String defaultGraphFile = "../graphes/graphe.txt";
+        File f = new File(defaultGraphFile);
+        if (f.exists()) {
+            loadAndDrawGraph(defaultGraphFile);
+        } else {
+            currentGraph = GraphManager.initDefaultGraph(graphCanvas, stepsTextArea);
+        }
+
+        updateAlgorithmAvailability();
+    }
 
     // ---------------------------
     // Chargement manuel via menu
@@ -49,11 +64,13 @@ public class Controller {
         String filepath = FileHelper.chooseFile(stage);
         if (filepath != null) {
             loadAndDrawGraph(filepath);
+            updateAlgorithmAvailability();
         }
     }
 
-
-
+    // ---------------------------
+    // Exécution de l’algorithme sélectionné
+    // ---------------------------
     @FXML
     private void onExecuteClicked() {
         if (currentGraph == null) {
@@ -61,22 +78,25 @@ public class Controller {
             return;
         }
 
-        // Réinitialiser StepManager
         stepManager.reset();
-
         String selectedAlgo = algorithmComboBox.getValue();
         String[] res = null;
+
+        boolean hasNeg = GraphManager.hasNegativeWeight(currentGraph);
+        if (hasNeg && !(selectedAlgo.equals("Bellman-Ford") || selectedAlgo.equals("Floyd"))) {
+            stepsTextArea.setText("Algorithme non disponible pour graphe avec poids négatif !");
+            return;
+        }
 
         switch (selectedAlgo) {
             case "Parcours en profondeur (DFS)" -> {
                 currentAlgo = new DFS();
-                // Récupère le StepManager de l'algo
-                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph,0);
+                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph, 0);
                 res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, 0);
             }
             case "Parcours en largeur (BFS)" -> {
                 currentAlgo = new BFS();
-                res = GraphManager.runBFS((BFS) currentAlgo, currentGraph,  0);
+                res = GraphManager.runBFS((BFS) currentAlgo, currentGraph, 0);
             }
             case "Kruskal" -> {
                 currentAlgo = new Kruskal();
@@ -90,14 +110,18 @@ public class Controller {
                 currentAlgo = new Dijkstra();
                 res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, 0, 9);
             }
-            case "Bellman-Ford" -> {
-                stepsTextArea.setText("Bellman-Ford non implémenté");
-                return;
+            /*case "Bellman-Ford" -> {
+                currentAlgo = new BellmanFord();
+                res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, 0, 9);
+            }
+            case "Floyd" -> {
+                currentAlgo = new Floyd();
+                res = GraphManager.runFloyd((Floyd) currentAlgo, currentGraph);
             }
             default -> {
                 stepsTextArea.setText("Sélection invalide !");
                 return;
-            }
+            }*/
         }
 
         if (res != null) {
@@ -105,44 +129,19 @@ public class Controller {
             resultTextArea.setText(res[1]);      // Résultat final
         }
 
-        // Dessiner les étapes avec GraphDrawer
         GraphDrawer gD = new GraphDrawer(currentGraph);
         gD.drawGraph(graphCanvas);
-        gD.drawStepManagerSequentially(graphCanvas,stepManager,500);
-
-    }
-
-
-
-
-    // ---------------------------
-    // Initialisation automatique
-    // ---------------------------
-    // ---------------------------
-// Initialisation automatique
-// ---------------------------
-    @FXML
-    public void initialize() {
-        String defaultGraphFile = "../graphes/graphe.txt";
-
-        File f = new File(defaultGraphFile);
-        if (f.exists()) {
-            loadAndDrawGraph(defaultGraphFile);
-        } else {
-            // initDefaultGraph retourne maintenant le graphe et met à jour stepsTextArea
-            currentGraph = GraphManager.initDefaultGraph(graphCanvas, stepsTextArea);
-        }
+        gD.drawStepManagerSequentially(graphCanvas, stepManager, 500);
     }
 
     // ---------------------------
-// Charger et dessiner un fichier
-// ---------------------------
+    // Charger et dessiner un fichier
+    // ---------------------------
     private void loadAndDrawGraph(String filepath) {
         try {
             currentGraph = FileHelper.loadGraphFromFile(filepath);
             GraphDrawer gd = new GraphDrawer(currentGraph);
             gd.drawGraph(graphCanvas);
-           // gd.drawStepManagerSequentially(graphCanvas,stepManager,500);
 
             if (stepsTextArea != null) {
                 stepsTextArea.clear();
@@ -154,4 +153,33 @@ public class Controller {
         }
     }
 
+    // ---------------------------
+    // Active/désactive les algos selon le graphe
+    // ---------------------------
+    private void updateAlgorithmAvailability() {
+        if (currentGraph == null || algorithmComboBox == null) return;
+
+        boolean hasNeg = GraphManager.hasNegativeWeight(currentGraph);
+        algorithmComboBox.getItems().clear();
+
+        if (hasNeg) {
+            algorithmComboBox.getItems().addAll(
+                    "Bellman-Ford",
+                    "Floyd"
+            );
+
+        } else {
+            algorithmComboBox.getItems().addAll(
+                    "Parcours en profondeur (DFS)",
+                    "Parcours en largeur (BFS)",
+                    "Kruskal",
+                    "Prim",
+                    "Dijkstra",
+                    "Bellman-Ford",
+                    "Floyd"
+            );
+        }
+
+        algorithmComboBox.getSelectionModel().selectFirst();
+    }
 }
