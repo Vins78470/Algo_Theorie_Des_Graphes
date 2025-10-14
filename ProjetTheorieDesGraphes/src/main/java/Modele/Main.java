@@ -4,50 +4,44 @@ import java.util.Scanner;
 
 public class Main {
 
-    // --- Exemple d'utilisation ---
     public static void main(String[] args) {
-        DFS dfs = new DFS();
-        BFS bfs = new BFS();
-        String[] villes = {
-                "Paris", "Caen", "Rennes", "Nantes", "Bordeaux",
-                "Lille", "Nancy", "Dijon", "Lyon", "Grenoble"
-        };
 
-        int n = villes.length;
-        Graphe g = new Graphe(n, false, true, villes); // non orienté, pondéré
+        // === Définition des sommets ===
+        String[] sommets = {"s1", "s2", "s3", "s4", "s5", "s6"};
+        Graphe g = new Graphe(sommets.length, true, true, sommets); // orienté, pondéré
 
-        // --- Arêtes pondérées (selon l’image) ---
-        g.addEdge(0, 1, 50);   // Paris - Caen
-        g.addEdge(0, 2, 110);  // Paris - Rennes
-        g.addEdge(0, 3, 80);   // Paris - Nantes
-        g.addEdge(0, 4, 150);  // Paris - Bordeaux
-        g.addEdge(0, 5, 70);   // Paris - Lille
-        g.addEdge(0, 7, 60);   // Paris - Dijon
+        // === Arêtes (selon ta liste) ===
+        g.addEdge(0, 1, 4);   // s1 -> s2
+        g.addEdge(0, 4, 7);   // s1 -> s5
 
-        g.addEdge(1, 2, 75);   // Caen - Rennes
-        g.addEdge(1, 5, 65);   // Caen - Lille
+        g.addEdge(1, 2, 3);   // s2 -> s3
+        g.addEdge(1, 5, 5);   // s2 -> s6
 
-        g.addEdge(2, 3, 45);   // Rennes - Nantes
-        g.addEdge(2, 4, 130);  // Rennes - Bordeaux
+        g.addEdge(2, 3, 3);   // s3 -> s4
+        g.addEdge(2, 4, 2);   // s3 -> s5
+        g.addEdge(2, 5, 6);   // s3 -> s6
 
-        g.addEdge(3, 4, 90);   // Nantes - Bordeaux
+        g.addEdge(4, 1, -4);  // s5 -> s2
+        g.addEdge(4, 2, -1);  // s5 -> s3
+        g.addEdge(4, 5, 3);   // s5 -> s6
 
-        g.addEdge(4, 8, 100);  // Bordeaux - Lyon
+        g.addEdge(5, 2, -2);  // s6 -> s3
+        g.addEdge(5, 3, 2);   // s6 -> s4
 
-        g.addEdge(5, 6, 100);  // Lille - Nancy
-        g.addEdge(5, 7, 120);  // Lille - Dijon
+        // === Affichage de la matrice d’adjacence ===
+        g.printMatrix();
 
-        g.addEdge(6, 7, 75);   // Nancy - Dijon
-        g.addEdge(6, 8, 90);   // Nancy - Lyon
-        g.addEdge(6, 9, 80);   // Nancy - Grenoble
+        // === Choix du sommet de départ ===
+        Scanner sc = new Scanner(System.in);
+        System.out.print("\nEntrez le sommet de départ (ex: s1, s2, s3...) : ");
+        String source = sc.nextLine().trim();
 
-        g.addEdge(7, 8, 70);   // Dijon - Lyon
-        g.addEdge(7, 9, 75);   // Dijon - Grenoble
+        // === Exécution de Bellman-Ford ===
+        BellmanFord bf = new BellmanFord(new StepManager());
+        String resultat = bf.run(g, source);
 
-        g.addEdge(8, 9, 40);   // Lyon - Grenoble
-
-
+        // === Affichage du résultat final ===
+        System.out.println("\n" + resultat);
+        System.out.println("=== Fin du programme ===");
     }
-
-
 }

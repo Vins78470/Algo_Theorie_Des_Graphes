@@ -85,6 +85,10 @@ public class GraphManager {
             }
         }
         return false;
+    /** --- Bellman-Ford --- */
+    public static String[] runBellmanFord(BellmanFord bfAlgo, Graphe g, int start) {
+        String full = "=== Algorithme de Bellman-Ford ===\n" + bfAlgo.getResult(g, start);
+        return split(full);
     }
 
 }
