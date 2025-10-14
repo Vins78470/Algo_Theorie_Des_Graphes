@@ -3,25 +3,38 @@ package Controller;
 import Helpers.FileHelper;
 import Modele.*;
 import Vue.GraphDrawer;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class Controller {
+public class Controller implements Initializable {
 
     @FXML
     private MenuItem IdOpenGraph;
 
     @FXML
+    private SplitPane mainSplitPane;
+
+    @FXML
     private TextArea stepsTextArea;
 
+    @FXML
+    private AnchorPane canvasAnchorPane;
     @FXML
     private TextArea resultTextArea;
 
@@ -44,28 +57,69 @@ public class Controller {
     private String[] res;  // <-- accessible dans tout le Controller
 
     @FXML
-    public void initialize() {
-        String defaultGraphFile = "../graphes/graphe.txt";
-        File f = new File(defaultGraphFile);
-        if (f.exists()) {
-            loadAndDrawGraph(defaultGraphFile);
-        } else {
-            currentGraph = GraphManager.initDefaultGraph(graphCanvas, stepsTextArea);
-        }
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        // --- Canvas responsive ---
+        graphCanvas.widthProperty().bind(canvasAnchorPane.widthProperty());
+        graphCanvas.heightProperty().bind(canvasAnchorPane.heightProperty());
+
+        Runnable redrawGraph = () -> {
+            if (currentGraph != null) {
+                GraphDrawer gd = new GraphDrawer(currentGraph);
+                gd.drawGraph(graphCanvas);
+                gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
+            }
+        };
+
+        graphCanvas.widthProperty().addListener((obs, oldVal, newVal) -> redrawGraph.run());
+        graphCanvas.heightProperty().addListener((obs, oldVal, newVal) -> redrawGraph.run());
+
+        // --- Charger graphe par défaut ---
+        Platform.runLater(() -> {
+            String defaultGraphFile = "../graphes/graphe.txt";
+            File f = new File(defaultGraphFile);
+            if (f.exists()) {
+                loadAndDrawGraph(defaultGraphFile);
+            } else {
+                currentGraph = GraphManager.initDefaultGraph(graphCanvas, stepsTextArea);
+                redrawGraph.run();
+            }
+
+            // Initialiser les ComboBox et l’interface
+            if (currentGraph != null) {
+                initVertexComboBoxes(currentGraph);
+                updateVertexComboBoxes();
+            }
+
+            updateAlgorithmAvailability();
+
+            if (algorithmComboBox != null) {
+                algorithmComboBox.setOnAction(e -> updateVertexComboBoxes());
+            }
+
+
+        });
+    }
+
+
+    private void redrawGraph() {
         if (currentGraph != null) {
-            initVertexComboBoxes(currentGraph);
-            updateVertexComboBoxes();
-        }
-
-        updateAlgorithmAvailability();
-
-        // Listener pour détecter le changement d'algorithme
-        if (algorithmComboBox != null) {
-            algorithmComboBox.setOnAction(e -> updateVertexComboBoxes());
+            GraphDrawer gd = new GraphDrawer(currentGraph);
+            gd.drawGraph(graphCanvas);
+            // Si tu veux aussi dessiner les étapes du stepManager :
+            gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
         }
     }
 
+
+
+    private void drawInitialGraph() {
+        if (currentGraph != null) {
+            GraphDrawer gd = new GraphDrawer(currentGraph);
+            gd.drawGraph(graphCanvas);
+        }
+    }
     @FXML
     private void onOpenGraphClicked() {
         Stage stage = (Stage) IdOpenGraph.getParentPopup().getOwnerWindow();
@@ -93,35 +147,72 @@ public class Controller {
         switch (selectedAlgo) {
             case "Parcours en profondeur (DFS)" -> {
                 currentAlgo = new DFS();
-                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph, 0);
-                res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, 0);
+
+                // Récupérer le sommet de départ
+                String startVertex = startComboBox.getValue();
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+
+                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph, startIndex);
+                res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, startIndex);
             }
+
             case "Parcours en largeur (BFS)" -> {
                 currentAlgo = new BFS();
-                res = GraphManager.runBFS((BFS) currentAlgo, currentGraph, 0);
+
+                String startVertex = startComboBox.getValue();
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+
+                res = GraphManager.runBFS((BFS) currentAlgo, currentGraph, startIndex);
             }
+
             case "Kruskal" -> {
                 currentAlgo = new Kruskal();
                 res = GraphManager.runKruskal((Kruskal) currentAlgo, currentGraph);
             }
+
             case "Prim" -> {
                 currentAlgo = new Prim();
-                res = GraphManager.runPrim((Prim) currentAlgo, currentGraph, 0);
+
+                String startVertex = startComboBox.getValue();
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+
+                res = GraphManager.runPrim((Prim) currentAlgo, currentGraph, startIndex);
             }
+
             case "Dijkstra" -> {
                 currentAlgo = new Dijkstra();
-                res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, 0, 9);
+
+                String startVertex = startComboBox.getValue();
+                String endVertex = endComboBox.getValue();
+
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+
+                res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, startIndex, endIndex);
             }
-            /*case "Bellman-Ford" -> {
-                currentAlgo = new BellmanFord();
-                res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, 0, 9);
-            }
-            case "Floyd" -> {
-                currentAlgo = new Floyd();
-                res = GraphManager.runFloyd((Floyd) currentAlgo, currentGraph);
-            }*/
+
+    /*
+    case "Bellman-Ford" -> {
+        currentAlgo = new BellmanFord();
+
+        String startVertex = startComboBox.getValue();
+        String endVertex = endComboBox.getValue();
+
+        int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+        int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+
+        res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, startIndex, endIndex);
+    }
+
+    case "Floyd" -> {
+        currentAlgo = new Floyd();
+        res = GraphManager.runFloyd((Floyd) currentAlgo, currentGraph);
+    }
+    */
+
             default -> res = null;
         }
+
     }
 
     // ---------------------------
@@ -239,5 +330,6 @@ public class Controller {
             }
         }
     }
+
 
 }
