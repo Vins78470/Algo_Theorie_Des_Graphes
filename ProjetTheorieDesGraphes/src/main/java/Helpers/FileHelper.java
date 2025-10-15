@@ -51,7 +51,6 @@ public class FileHelper {
 
             int[] distances = new int[parts.length - 1];
             for (int i = 1; i < parts.length; i++) {
-                // nettoyage des espaces et remplacement d’éventuels tirets Unicode
                 String value = parts[i].trim().replace("–", "-").replace("−", "-");
                 distances[i - 1] = Integer.parseInt(value);
             }
@@ -60,12 +59,25 @@ public class FileHelper {
         br.close();
 
         int n = cityNames.size();
-        Graphe g = new Graphe(n, false, true, cityNames.toArray(new String[0]));
+
+        // --- Détection automatique si le graphe est orienté ---
+        boolean oriented = false;
+        for (int i = 0; i < n; i++) {
+            int[] rowI = rows.get(i);
+            for (int j = 0; j < n; j++) {
+                if (rowI[j] != rows.get(j)[i]) { // asymétrie détectée
+                    oriented = true;
+                    break;
+                }
+            }
+            if (oriented) break;
+        }
+
+        Graphe g = new Graphe(n, oriented, true, cityNames.toArray(new String[0]));
 
         for (int i = 0; i < n; i++) {
             int[] row = rows.get(i);
             for (int j = 0; j < row.length; j++) {
-                // ajouter même les poids négatifs, sauf si c’est 0 (pas de lien)
                 if (row[j] != 0) {
                     g.addEdge(i, j, row[j]);
                 }

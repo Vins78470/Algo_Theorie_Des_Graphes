@@ -118,8 +118,12 @@ public class GraphDrawer {
         gc.setLineWidth(2);
         int edgeCounter = 0;
 
+        boolean oriented = g.isOriented(); // Vérifie si le graphe est orienté
+
         for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
+            for (int j = 0; j < n; j++) {
+                if (!oriented && j <= i) continue; // éviter les doublons pour non-orienté
+
                 int weight = mat[i][j];
                 if (weight != 0) {
                     double x1 = pos[i][0];
@@ -130,6 +134,7 @@ public class GraphDrawer {
                     double dx = x2 - x1;
                     double dy = y2 - y1;
                     double length = Math.sqrt(dx * dx + dy * dy);
+
                     double offset = 20 * ((edgeCounter % 2 == 0) ? 1 : -1);
                     double controlX = (x1 + x2) / 2 - dy / length * offset;
                     double controlY = (y1 + y2) / 2 + dx / length * offset;
@@ -138,14 +143,21 @@ public class GraphDrawer {
                             edgeStates.get(i + "-" + j) : Color.GRAY;
                     gc.setStroke(color);
 
+                    // Dessin de la courbe
                     gc.beginPath();
                     gc.moveTo(x1, y1);
                     gc.quadraticCurveTo(controlX, controlY, x2, y2);
                     gc.stroke();
 
+                    // Dessiner le poids
                     double midX = (x1 + x2) / 2 + (controlX - (x1 + x2) / 2) / 2;
                     double midY = (y1 + y2) / 2 + (controlY - (y1 + y2) / 2) / 2;
                     drawEdgeWeight(gc, midX, midY, weight, edgeCounter);
+
+                    // Flèche si orienté
+                    if (oriented) {
+                        drawArrowOnCurve(gc, x1, y1, controlX, controlY, x2, y2);
+                    }
 
                     edgeCounter++;
                 }
@@ -154,11 +166,51 @@ public class GraphDrawer {
     }
 
     private void drawEdgeWeight(GraphicsContext gc, double x, double y, int weight, int edgeIndex) {
-        gc.setFill(Color.DARKBLUE);
-        gc.setFont(Font.font(20));
-        double offset = 5 + (edgeIndex % 2) * 3;
-        gc.fillText(String.valueOf(weight), x + offset, y - offset);
+        gc.setFill(Color.DARKBLUE);          // couleur du texte
+        gc.setFont(Font.font(16));           // taille du texte
+        double offsetX = 5 + (edgeIndex % 2) * 3; // léger décalage pour les arêtes multiples
+        double offsetY = -5 - (edgeIndex % 2) * 3;
+        gc.fillText(String.valueOf(weight), x + offsetX, y + offsetY);
     }
+
+
+    private void drawArrowOnCurve(GraphicsContext gc, double x1, double y1, double cx, double cy, double x2, double y2) {
+        double nodeRadius = 10; // rayon du cercle du nœud
+        double arrowLength = 20;
+        double arrowWidth = 12;
+
+        // longueur totale de la ligne droite entre le départ et l'arrivée
+        double totalLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+        // proportion pour reculer un peu plus que juste le rayon
+        double margin = nodeRadius + 5; // 5 pixels supplémentaires
+        double tOffset = (totalLength - margin) / totalLength;
+        if (tOffset > 1) tOffset = 1;
+        if (tOffset < 0) tOffset = 0;
+
+        double t = tOffset;
+        // point sur la quadratique
+        double xt = Math.pow(1 - t, 2) * x1 + 2 * (1 - t) * t * cx + t * t * x2;
+        double yt = Math.pow(1 - t, 2) * y1 + 2 * (1 - t) * t * cy + t * t * y2;
+
+        // tangente pour orientation de la flèche
+        double dx = 2 * (1 - t) * (cx - x1) + 2 * t * (x2 - cx);
+        double dy = 2 * (1 - t) * (cy - y1) + 2 * t * (y2 - cy);
+        double angle = Math.atan2(dy, dx);
+
+        // dessiner la flèche
+        double xArrow1 = xt - arrowLength * Math.cos(angle - Math.PI / 6);
+        double yArrow1 = yt - arrowLength * Math.sin(angle - Math.PI / 6);
+        double xArrow2 = xt - arrowLength * Math.cos(angle + Math.PI / 6);
+        double yArrow2 = yt - arrowLength * Math.sin(angle + Math.PI / 6);
+
+        gc.setStroke(Color.DARKRED);
+        gc.setLineWidth(2.5);
+        gc.strokeLine(xt, yt, xArrow1, yArrow1);
+        gc.strokeLine(xt, yt, xArrow2, yArrow2);
+    }
+
+
 
     private void drawNodes(GraphicsContext gc, Graphe g, double[][] pos) {
         drawNodes(gc, g, pos, null);
