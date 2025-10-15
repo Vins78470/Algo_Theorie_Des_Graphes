@@ -99,6 +99,8 @@ public class Controller implements Initializable {
             }
 
         });
+
+
     }
 
 
@@ -119,13 +121,15 @@ public class Controller implements Initializable {
         }
     }
     @FXML
-    private void onOpenGraphClicked() {
+    private void onOpenGraphClicked()
+    {
         Stage stage = (Stage) IdOpenGraph.getParentPopup().getOwnerWindow();
         String filepath = FileHelper.chooseFile(stage);
         if (filepath != null) {
             loadAndDrawGraph(filepath);
             updateAlgorithmAvailability();
         }
+
     }
 
     // ---------------------------
@@ -243,6 +247,7 @@ public class Controller implements Initializable {
     private void loadAndDrawGraph(String filepath) {
         try {
             currentGraph = FileHelper.loadGraphFromFile(filepath);
+            currentGraph.printMatrix();
             GraphDrawer gd = new GraphDrawer(currentGraph);
             gd.drawGraph(graphCanvas);
 
