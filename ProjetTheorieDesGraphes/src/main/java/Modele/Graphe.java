@@ -147,5 +147,9 @@ public class Graphe {
         return mat[u][v];
     }
 
+    public boolean isOriented(){
+        return directed;
+    }
+
 
 }
