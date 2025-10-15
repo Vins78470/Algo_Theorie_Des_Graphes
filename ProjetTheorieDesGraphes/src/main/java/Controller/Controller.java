@@ -68,7 +68,7 @@ public class Controller implements Initializable {
             if (currentGraph != null) {
                 GraphDrawer gd = new GraphDrawer(currentGraph);
                 gd.drawGraph(graphCanvas);
-                gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
+               // gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
             }
         };
 
@@ -109,7 +109,7 @@ public class Controller implements Initializable {
             GraphDrawer gd = new GraphDrawer(currentGraph);
             gd.drawGraph(graphCanvas);
             // Si tu veux aussi dessiner les étapes du stepManager :
-            gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
+            //gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
         }
     }
 
