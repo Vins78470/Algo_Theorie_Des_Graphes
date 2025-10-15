@@ -31,7 +31,7 @@ public class Main {
         // === Affichage de la matrice d’adjacence ===
         g.printMatrix();
         g.printMatrix();
-
+/*:
         Scanner sc = new Scanner(System.in);
         System.out.print("\nEntrez le sommet de départ (ex: s1) : ");
         String source = sc.nextLine().trim();
@@ -46,7 +46,7 @@ public class Main {
 
 
 
-/*:
+
         FloydWarshall fw = new FloydWarshall();
         String[] result = GraphManager.runFloydWarshall(fw, g);
         System.out.println(result[0]);  // étapes ou matrice complète

@@ -1,20 +1,24 @@
 package Modele;
 
-/**
- * Algorithme de Floyd-Warshall (cours EFREI)
- * Affichage parfaitement aligné des matrices W et P.
- */
+import java.util.*;
+
 public class FloydWarshall {
 
-    public String run(Graphe g) {
+    private double[][] W;
+    private int[][] P;
+    private String[] noms;
+
+    public FloydWarshall() {}
+
+    // Calcul complet avec affichage des étapes
+    private String computeFloydWarshall(Graphe g) {
         int n = g.getMatrix().length;
-        int[][] M = g.getMatrix();
-        String[] noms = new String[n];
+        noms = new String[n];
         for (int i = 0; i < n; i++) noms[i] = g.getVertexName(i);
 
-        // === Initialisation ===
-        double[][] W = new double[n][n];
-        int[][] P = new int[n][n];
+        W = new double[n][n];
+        P = new int[n][n];
+        int[][] M = g.getMatrix();
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -22,72 +26,89 @@ public class FloydWarshall {
                 else if (M[i][j] != 0) W[i][j] = M[i][j];
                 else W[i][j] = Double.POSITIVE_INFINITY;
 
-                if (M[i][j] != 0) P[i][j] = i;
-                else P[i][j] = -1;
+                P[i][j] = (M[i][j] != 0) ? i : -1;
             }
         }
 
-        // === Triple boucle principale ===
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Matrice initiale ===\n");
+        appendMatrix(sb);
+
         for (int k = 0; k < n; k++) {
+            sb.append("=== Étape k = ").append(k).append(" ===\n");
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
-                    if (W[i][k] + W[k][j] < W[i][j]) {
+                    if (W[i][k] != Double.POSITIVE_INFINITY && W[k][j] != Double.POSITIVE_INFINITY
+                            && W[i][k] + W[k][j] < W[i][j]) {
                         W[i][j] = W[i][k] + W[k][j];
                         P[i][j] = P[k][j];
                     }
                 }
             }
+            appendMatrix(sb);
         }
 
-        // === Vérification de cycle absorbant ===
         for (int i = 0; i < n; i++) {
             if (W[i][i] < 0) {
-                return "⚠️ Le graphe contient un cycle absorbant (poids négatif).";
+                sb.append("⚠️ Cycle absorbant détecté (poids négatif).\n");
+                return sb.toString();
             }
         }
 
-        // === Construction du texte ===
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Algorithme de Floyd-Warshall ===\n\n");
-
-        int cellWidth = 7; // largeur fixe de chaque cellule (parfait pour alignement console)
-
-        // ---------- Matrice W ----------
-        sb.append("Distances minimales (matrice W) :\n\n");
-
-        sb.append(String.format("%-" + cellWidth + "s", "")); // coin vide
-        for (String name : noms) sb.append(String.format("%-" + cellWidth + "s", name));
-        sb.append("\n");
-
-        for (int i = 0; i < n; i++) {
-            sb.append(String.format("%-" + cellWidth + "s", noms[i]));
-            for (int j = 0; j < n; j++) {
-                String val;
-                if (W[i][j] == Double.POSITIVE_INFINITY) val = "∞";
-                else val = String.format("%.0f", W[i][j]);
-                sb.append(String.format("%-" + cellWidth + "s", val));
-            }
-            sb.append("\n");
-        }
-
-        // ---------- Matrice P ----------
-        sb.append("\nTable des prédécesseurs (matrice P) :\n\n");
-
-        sb.append(String.format("%-" + cellWidth + "s", ""));
-        for (String name : noms) sb.append(String.format("%-" + cellWidth + "s", name));
-        sb.append("\n");
-
-        for (int i = 0; i < n; i++) {
-            sb.append(String.format("%-" + cellWidth + "s", noms[i]));
-            for (int j = 0; j < n; j++) {
-                String pred;
-                if (P[i][j] == -1) pred = "-";
-                else pred = noms[P[i][j]];
-                sb.append(String.format("%-" + cellWidth + "s", pred));
-            }
-            sb.append("\n");
-        }
-
+        sb.append("=== Matrice finale des plus courts chemins ===\n");
+        appendMatrix(sb);
         return sb.toString();
+    }
+
+    // Affichage de la matrice avec bordures et largeur adaptée
+    private void appendMatrix(StringBuilder sb) {
+        int n = W.length;
+        int cellWidth = 9; // largeur fixe plus grande pour noms longs
+
+        // Ligne de séparation
+        String sep = "+";
+        for (int i = 0; i <= n; i++) sep += "-".repeat(cellWidth) + "+";
+
+        sb.append(sep).append("\n");
+
+        // En-tête
+        sb.append("|").append(String.format("%" + cellWidth + "s", ""));
+        for (String nom : noms) sb.append("|").append(String.format("%" + cellWidth + "s", nom));
+        sb.append("|\n").append(sep).append("\n");
+
+        // Contenu
+        for (int i = 0; i < n; i++) {
+            sb.append("|").append(String.format("%" + cellWidth + "s", noms[i]));
+            for (int j = 0; j < n; j++) {
+                String val = (W[i][j] == Double.POSITIVE_INFINITY) ? "∞" : String.valueOf((int) W[i][j]);
+                sb.append("|").append(String.format("%" + cellWidth + "s", val));
+            }
+            sb.append("|\n").append(sep).append("\n");
+        }
+        sb.append("\n");
+    }
+
+    // Méthode publique pour afficher étapes + chemin
+    public String getResult(Graphe g, int start, int end) {
+        String etapes = computeFloydWarshall(g);
+
+        if (start < 0 || start >= noms.length || end < 0 || end >= noms.length)
+            return etapes + "Indice invalide.";
+
+        if (W[start][end] == Double.POSITIVE_INFINITY)
+            return etapes + "Aucun chemin n’existe.";
+
+        List<String> chemin = new ArrayList<>();
+        int v = end;
+        while (v != -1) {
+            chemin.add(noms[v]);
+            v = P[start][v];
+        }
+        Collections.reverse(chemin);
+
+        etapes += "Chemin le plus court de " + noms[start] + " à " + noms[end] + " : " +
+                String.join(" → ", chemin) + "   →   Distance = " + (int) W[start][end] + "\n";
+
+        return etapes;
     }
 }

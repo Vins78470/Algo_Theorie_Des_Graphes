@@ -96,8 +96,8 @@ public class GraphManager {
 
 
     /** --- Floyd-Warshall --- */
-    public static String[] runFloydWarshall(FloydWarshall fwAlgo, Graphe g) {
-        String full = "=== Algorithme de Floyd-Warshall ===\n" + fwAlgo.run(g);
+    public static String[] runFloydWarshall(FloydWarshall fwAlgo, Graphe g,int start, int end) {
+        String full = "=== Algorithme de Floyd-Warshall ===\n" + fwAlgo.getResult(g,start,end);
         return split(full);
     }
 

@@ -98,7 +98,6 @@ public class Controller implements Initializable {
                 algorithmComboBox.setOnAction(e -> updateVertexComboBoxes());
             }
 
-
         });
     }
 
@@ -111,7 +110,6 @@ public class Controller implements Initializable {
             gd.drawStepManagerSequentially(graphCanvas, stepManager, 500);
         }
     }
-
 
 
     private void drawInitialGraph() {
@@ -191,27 +189,31 @@ public class Controller implements Initializable {
                 res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, startIndex, endIndex);
             }
 
-    /*
-    case "Bellman-Ford" -> {
-        currentAlgo = new BellmanFord();
 
-        String startVertex = startComboBox.getValue();
-        String endVertex = endComboBox.getValue();
+            case "Bellman-Ford" -> {
+                currentAlgo = new BellmanFord();
 
-        int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
-        int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+                String startVertex = startComboBox.getValue();
+                String endVertex = endComboBox.getValue();
 
-        res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, startIndex, endIndex);
-    }
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
 
-    case "Floyd" -> {
-        currentAlgo = new Floyd();
-        res = GraphManager.runFloyd((Floyd) currentAlgo, currentGraph);
-    }
-    */
+                res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, startIndex, endIndex);
+            }
 
-            default -> res = null;
-        }
+            case "Floyd" -> {
+                currentAlgo = new FloydWarshall();
+                String startVertex = startComboBox.getValue();
+                String endVertex = endComboBox.getValue();
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+                res = GraphManager.runFloydWarshall((FloydWarshall) currentAlgo, currentGraph,startIndex,endIndex);
+            }
+
+
+                default -> res = null;
+            }
 
     }
 
