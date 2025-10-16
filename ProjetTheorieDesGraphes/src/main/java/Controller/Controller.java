@@ -241,7 +241,7 @@ public class Controller implements Initializable {
 
         GraphDrawer gD = new GraphDrawer(currentGraph);
         gD.drawGraph(graphCanvas);
-        gD.drawStepManagerSequentially(graphCanvas, stepManager, 500);
+        gD.drawStepManagerSequentially(graphCanvas, stepManager, 1000);
     }
 
     private void loadAndDrawGraph(String filepath) {

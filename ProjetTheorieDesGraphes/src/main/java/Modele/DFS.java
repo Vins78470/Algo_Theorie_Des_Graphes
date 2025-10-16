@@ -49,31 +49,58 @@ public class DFS {
     // =========================
     // Partie Steps pour animation via StepManager
     // =========================
-    public StepManager getStepManager(Graphe graphe, int startNode) {
+    public StepManager getStepManager(Graphe graphe, int startNodeIndex) {
         StepManager stepManager = new StepManager();
         int[][] matrice = graphe.getMatrix();
+        Node[] nodes = graphe.getNodes();
         Set<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
-        visitOrder.clear();
 
-        stack.push(startNode);
+        stack.push(startNodeIndex);
+        stepManager.markNode(nodes[startNodeIndex], NodeState.NODE_TO_VISIT);
 
         while (!stack.isEmpty()) {
-            int node = stack.peek();
+            int nodeIndex = stack.peek();
+            Node currentNode = nodes[nodeIndex];
 
-            if (!visited.contains(node)) visitNode(node, visited, stepManager);
+            if (!visited.contains(nodeIndex)) {
+                visited.add(nodeIndex);
+                currentNode.setState(NodeState.NODE_VISITED);
+                stepManager.markNode(currentNode, NodeState.NODE_VISITED);
+            }
 
-            int nextNode = findNextNode(node, matrice, visited);
-            if (nextNode != -1) {
-                traverseEdge(node, nextNode, stepManager);
-                stack.push(nextNode);
-            } else {
+            // On cherche tous les voisins non visités pour "essayer" les arêtes
+            boolean hasNext = false;
+            for (int nextIndex = 0; nextIndex < nodes.length; nextIndex++) {
+                if (matrice[nodeIndex][nextIndex] != 0 && !visited.contains(nextIndex)) {
+                    Node nextNode = nodes[nextIndex];
+
+                    // 1️⃣ On marque l'arête comme parcourue pour tous les voisins
+                    stepManager.markEdge(currentNode, nextNode, NodeState.NODE_VISITED);
+
+                    // 2️⃣ On choisit la première arête pour continuer → NODE_KEPT
+                    if (!hasNext) {
+                        stepManager.markEdge(currentNode, nextNode, NodeState.NODE_KEPT);
+                        stack.push(nextIndex);
+                        stepManager.markNode(nextNode, NodeState.NODE_TO_VISIT);
+                        hasNext = true;
+                    }
+                }
+            }
+
+            // 3️⃣ Si aucun voisin non visité, backtrack
+            if (!hasNext) {
+                currentNode.setState(NodeState.NODE_BACKTRACK);
+                stepManager.markNode(currentNode, NodeState.NODE_BACKTRACK);
                 stack.pop();
             }
         }
-
+        System.out.println(stepManager);
         return stepManager;
     }
+
+
+
 
     // =========================
     // Fonctions utilitaires
@@ -90,15 +117,7 @@ public class DFS {
         return nextNode;
     }
 
-    private void visitNode(int node, Set<Integer> visited, StepManager stepManager) {
-        visited.add(node);
-        visitOrder.add(node);
-        stepManager.markNode(node, Color.RED);
-    }
 
-    private void traverseEdge(int from, int to, StepManager stepManager) {
-        stepManager.markEdge(from, to, Color.PINK);
-    }
 
     private String[] getVertexNames(Graphe g) {
         try {
