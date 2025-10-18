@@ -85,7 +85,8 @@ public class GraphManager {
                 if (mat[i][j] < 0) return true;
             }
         }
-        return false;}
+        return false;
+    }
 
     /** --- Bellman-Ford (version départ/arrivée) --- */
     public static String[] runBellmanFord(BellmanFord bfAlgo, Graphe g, int start, int end) {

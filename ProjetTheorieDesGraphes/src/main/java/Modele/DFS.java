@@ -6,6 +6,7 @@ import java.util.*;
 public class DFS {
 
     private final List<Integer> visitOrder = new ArrayList<>();
+    private final List<Integer> finalPath = new ArrayList<>(); // <-- Nouveau : final path
 
     // =========================
     // Partie texte classique
@@ -18,8 +19,10 @@ public class DFS {
         Set<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
         visitOrder.clear();
+        finalPath.clear();
 
         stack.push(startNode);
+        finalPath.add(startNode); // Ajouter le départ au final path
         sb.append("Départ depuis : ").append(noms[startNode]).append("\n\n");
 
         while (!stack.isEmpty()) {
@@ -34,6 +37,7 @@ public class DFS {
             int nextNode = findNextNode(node, matrice, visited);
             if (nextNode != -1) {
                 stack.push(nextNode);
+                finalPath.add(nextNode); // Ajouter chaque sommet visité au final path
                 sb.append("  Descente vers : ").append(noms[nextNode])
                         .append(" (distance : ").append(matrice[node][nextNode]).append(")\n");
             } else {
@@ -55,8 +59,10 @@ public class DFS {
         Set<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
         visitOrder.clear();
+        finalPath.clear();
 
         stack.push(startNode);
+        finalPath.add(startNode);
 
         while (!stack.isEmpty()) {
             int node = stack.peek();
@@ -65,14 +71,22 @@ public class DFS {
 
             int nextNode = findNextNode(node, matrice, visited);
             if (nextNode != -1) {
-                traverseEdge(node, nextNode, stepManager);
+
                 stack.push(nextNode);
+                finalPath.add(nextNode);
             } else {
                 stack.pop();
             }
         }
 
         return stepManager;
+    }
+
+    // =========================
+    // Getter pour finalPath
+    // =========================
+    public List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
     }
 
     // =========================
@@ -93,12 +107,9 @@ public class DFS {
     private void visitNode(int node, Set<Integer> visited, StepManager stepManager) {
         visited.add(node);
         visitOrder.add(node);
-        stepManager.markNode(node, Color.RED);
+
     }
 
-    private void traverseEdge(int from, int to, StepManager stepManager) {
-        stepManager.markEdge(from, to, Color.PINK);
-    }
 
     private String[] getVertexNames(Graphe g) {
         try {

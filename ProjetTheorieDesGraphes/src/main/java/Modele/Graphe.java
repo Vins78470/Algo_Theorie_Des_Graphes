@@ -65,6 +65,13 @@ public class Graphe {
         mat[u][v] = w;
         if (!directed) mat[v][u] = w;
     }
+    public Node[] getNodes() {
+        Node[] nodes = new Node[n];
+        for (int i = 0; i < n; i++) {
+            nodes[i] = new Node(i, vertexNames[i]);
+        }
+        return nodes;
+    }
 
     /** Supprime une arête. */
     public void removeEdge(int u, int v) {

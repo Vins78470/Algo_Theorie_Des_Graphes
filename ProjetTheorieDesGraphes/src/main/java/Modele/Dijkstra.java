@@ -9,6 +9,12 @@ import java.util.*;
  */
 public class Dijkstra {
 
+    private static List<Integer> finalPath = new ArrayList<>();
+
+    public static List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
+    }
+
     public static String getResult(Graphe g, int start, int end) {
         StringBuilder sb = new StringBuilder();
 
@@ -42,7 +48,8 @@ public class Dijkstra {
             }
         }
 
-        // --- Construction du résultat ---
+        // --- Construction du chemin final ---
+        finalPath.clear();
         if (dist[end] == Integer.MAX_VALUE) {
             sb.append("Aucun chemin trouvé entre ")
                     .append(g.getVertexName(start))
@@ -50,8 +57,20 @@ public class Dijkstra {
                     .append(g.getVertexName(end))
                     .append(".\n");
         } else {
-            sb.append("Distance minimale : ").append(dist[end]).append("\n");
-            sb.append("Chemin le plus court : ").append(reconstructPath(g, parent, start, end)).append("\n");
+            // Reconstruire le chemin
+            for (int v = end; v != -1; v = parent[v]) {
+                finalPath.add(v);
+            }
+            Collections.reverse(finalPath);
+
+            // Vérifier que le chemin commence bien par le sommet de départ
+            if (!finalPath.isEmpty() && finalPath.get(0) == start) {
+                sb.append("Distance minimale : ").append(dist[end]).append("\n");
+                sb.append("Chemin le plus court : ").append(reconstructPath(g, finalPath)).append("\n");
+            } else {
+                finalPath.clear();
+                sb.append("Aucun chemin disponible.\n");
+            }
         }
 
         return sb.toString();
@@ -70,20 +89,10 @@ public class Dijkstra {
         return minIndex;
     }
 
-    // Reconstruit le chemin à partir du tableau des parents
-    private static String reconstructPath(Graphe g, int[] parent, int start, int end) {
-        List<Integer> path = new ArrayList<>();
-        for (int v = end; v != -1; v = parent[v]) {
-            path.add(v);
-        }
-        Collections.reverse(path);
-
+    // Reconstruit le chemin à partir de la liste d'indices
+    private static String reconstructPath(Graphe g, List<Integer> path) {
         List<String> names = new ArrayList<>();
         for (int v : path) names.add(g.getVertexName(v));
-
-        // Vérifie que le chemin commence bien par le sommet de départ
-        if (path.get(0) != start) return "Aucun chemin disponible.";
-
         return String.join(" → ", names);
     }
 }
