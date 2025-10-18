@@ -1,4 +1,7 @@
+
+
 package Tests;
+
 
 import Modele.*;
 import org.junit.Test;
@@ -38,7 +41,6 @@ public class GraphManagerTest {
         assertEquals("Ordre BFS pondéré attendu", expectedOrder, actualOrder);
     }
 
-    /** Utilitaire : retourne la première ligne contenant le motif, ou null si introuvable */
     private String extractOrderLine(String text, String motif) {
         if (text == null) return null;
         String[] lines = text.split("\\r?\\n");
@@ -243,4 +245,5 @@ public class GraphManagerTest {
                     result.contains("Coût total = 570"));
         }
     }
+
 }
