@@ -263,7 +263,7 @@ public class Controller implements Initializable {
             finalPath = Prim.getFinalPath();
         } else if (currentAlgo instanceof Dijkstra ) {
             finalPath = Dijkstra.getFinalPath();
- 
+
         }
 
         // Dessiner uniquement le chemin final (sommets violets, arêtes rouges)

@@ -8,13 +8,15 @@ module org.example.projettheoriedesgraphes {
     requires com.almasb.fxgl.all;
     requires annotations;
     requires gs.core;
-    requires junit; // Pour JUnit 4 (si tu utilises JUnit 5 ce serait `requires org.junit.jupiter.api;`)
+    requires junit;
+    requires com.brunomnsilva.smartgraph; // Pour JUnit 4 (si tu utilises JUnit 5 ce serait `requires org.junit.jupiter.api;`)
 
     opens org.example.projettheoriedesgraphes to javafx.fxml;
     opens Controller to javafx.fxml;
     opens Helpers to javafx.fxml;
     opens Vue to javafx.fxml;
 
+    exports Vue;  // Ajouter cette ligne
     exports Tests; // ✅ rend le package des tests accessible (par exemple à IntelliJ / Maven / Gradle)
     exports org.example.projettheoriedesgraphes;
 }
