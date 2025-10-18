@@ -43,6 +43,27 @@ public class StepManager {
         steps.add(new Step(from, to, state));
     }
 
+    private List<Step> extractPathSteps(StepManager stepManager, List<String> finalNodeNames) {
+        List<Step> filtered = new ArrayList<>();
+
+        // On parcourt les Steps et on garde seulement ceux qui correspondent au chemin final
+        for (Step step : stepManager.getSteps()) {
+            if (step.getFrom() != null && step.getTo() != null) {
+                String from = step.getFrom().getName();
+                String to = step.getTo().getName();
+
+                // Si l'arête (from → to) correspond à un lien entre deux nœuds consécutifs du chemin
+                for (int i = 0; i < finalNodeNames.size() - 1; i++) {
+                    if (finalNodeNames.get(i).equals(from) && finalNodeNames.get(i + 1).equals(to)) {
+                        filtered.add(step);
+                    }
+                }
+            }
+        }
+        return filtered;
+    }
+
+
     /**
      * Réinitialise toutes les étapes
      */

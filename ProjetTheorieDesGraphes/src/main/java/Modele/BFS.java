@@ -6,11 +6,13 @@ public class BFS {
     private final Queue<Integer> queue;
     private final Set<Integer> visited;
     private final List<Integer> visitOrder;
+    private final List<Integer> finalPath; // <-- nouvelle liste pour le chemin final
 
     public BFS() {
         this.queue = new LinkedList<>();
         this.visited = new HashSet<>();
         this.visitOrder = new ArrayList<>();
+        this.finalPath = new ArrayList<>();
     }
 
     /**
@@ -30,10 +32,12 @@ public class BFS {
         queue.clear();
         visited.clear();
         visitOrder.clear();
+        finalPath.clear(); // <-- réinitialisation
 
         queue.add(startNode);
         visited.add(startNode);
         visitOrder.add(startNode);
+        finalPath.add(startNode); // <-- ajout au chemin final
 
         sb.append("Départ depuis : ").append(noms[startNode]).append("\n\n");
 
@@ -59,6 +63,7 @@ public class BFS {
                     queue.add(v.id);
                     visited.add(v.id);
                     visitOrder.add(v.id);
+                    finalPath.add(v.id); // <-- ajout au chemin final
                     sb.append("    → ").append(noms[v.id])
                             .append(" (distance : ").append(v.poids).append(")\n");
                 }
@@ -72,6 +77,11 @@ public class BFS {
         sb.append("Ordre de visite : ").append(formatVisited(noms)).append("\n");
 
         return sb.toString();
+    }
+
+    /** Retourne le chemin final sous forme de liste d’indices */
+    public List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
     }
 
     // --- Méthodes utilitaires ---
@@ -90,4 +100,6 @@ public class BFS {
         for (int v : visitOrder) lst.add(noms[v]);
         return String.join(" → ", lst);
     }
+
+
 }

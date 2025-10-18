@@ -1,12 +1,15 @@
 package Modele;
-
 import java.util.*;
 
 public class Kruskal {
+    private List<Integer> finalPath = new ArrayList<>();
 
-    public static String getResult(Graphe g) {
+    public List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
+    }
+
+    public String getResult(Graphe g) {
         StringBuilder sb = new StringBuilder();
-
         int[][] mat = g.getMatrix();
         int n = mat.length;
         List<int[]> edges = new ArrayList<>();
@@ -45,6 +48,35 @@ public class Kruskal {
         }
         sb.append("Coût total de l'arbre couvrant = ").append(totalCost).append("\n");
 
+        // Construire le finalPath pour la visualisation
+        finalPath.clear();
+        if (!mst.isEmpty()) {
+            // Construire l'arbre comme adjacence
+            Map<Integer, List<Integer>> tree = new HashMap<>();
+            for (int[] e : mst) {
+                tree.computeIfAbsent(e[0], k -> new ArrayList<>()).add(e[1]);
+                tree.computeIfAbsent(e[1], k -> new ArrayList<>()).add(e[0]);
+            }
+
+            // Parcours DFS avec backtrack pour garantir que chaque transition est une arête
+            boolean[] visited = new boolean[n];
+            generatePathWithBacktrack(0, tree, visited);
+        }
+
         return sb.toString();
+    }
+
+    private void generatePathWithBacktrack(int node, Map<Integer, List<Integer>> tree, boolean[] visited) {
+        visited[node] = true;
+        finalPath.add(node);
+
+        List<Integer> neighbors = tree.getOrDefault(node, Collections.emptyList());
+        for (int neighbor : neighbors) {
+            if (!visited[neighbor]) {
+                generatePathWithBacktrack(neighbor, tree, visited);
+                // Backtrack : retour au nœud actuel
+                finalPath.add(node);
+            }
+        }
     }
 }

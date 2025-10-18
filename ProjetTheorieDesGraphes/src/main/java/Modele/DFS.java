@@ -6,6 +6,7 @@ import java.util.*;
 public class DFS {
 
     private final List<Integer> visitOrder = new ArrayList<>();
+    private final List<Integer> finalPath = new ArrayList<>(); // <-- Nouveau : final path
 
     // =========================
     // Partie texte classique
@@ -18,8 +19,10 @@ public class DFS {
         Set<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
         visitOrder.clear();
+        finalPath.clear();
 
         stack.push(startNode);
+        finalPath.add(startNode); // Ajouter le départ au final path
         sb.append("Départ depuis : ").append(noms[startNode]).append("\n\n");
 
         while (!stack.isEmpty()) {
@@ -34,6 +37,7 @@ public class DFS {
             int nextNode = findNextNode(node, matrice, visited);
             if (nextNode != -1) {
                 stack.push(nextNode);
+                finalPath.add(nextNode); // Ajouter chaque sommet visité au final path
                 sb.append("  Descente vers : ").append(noms[nextNode])
                         .append(" (distance : ").append(matrice[node][nextNode]).append(")\n");
             } else {
@@ -49,58 +53,41 @@ public class DFS {
     // =========================
     // Partie Steps pour animation via StepManager
     // =========================
-    public StepManager getStepManager(Graphe graphe, int startNodeIndex) {
+    public StepManager getStepManager(Graphe graphe, int startNode) {
         StepManager stepManager = new StepManager();
         int[][] matrice = graphe.getMatrix();
-        Node[] nodes = graphe.getNodes();
         Set<Integer> visited = new HashSet<>();
         Stack<Integer> stack = new Stack<>();
+        visitOrder.clear();
+        finalPath.clear();
 
-        stack.push(startNodeIndex);
-        stepManager.markNode(nodes[startNodeIndex], NodeState.NODE_TO_VISIT);
+        stack.push(startNode);
+        finalPath.add(startNode);
 
         while (!stack.isEmpty()) {
-            int nodeIndex = stack.peek();
-            Node currentNode = nodes[nodeIndex];
+            int node = stack.peek();
 
-            if (!visited.contains(nodeIndex)) {
-                visited.add(nodeIndex);
-                currentNode.setState(NodeState.NODE_VISITED);
-                stepManager.markNode(currentNode, NodeState.NODE_VISITED);
-            }
+            if (!visited.contains(node)) visitNode(node, visited, stepManager);
 
-            // On cherche tous les voisins non visités pour "essayer" les arêtes
-            boolean hasNext = false;
-            for (int nextIndex = 0; nextIndex < nodes.length; nextIndex++) {
-                if (matrice[nodeIndex][nextIndex] != 0 && !visited.contains(nextIndex)) {
-                    Node nextNode = nodes[nextIndex];
+            int nextNode = findNextNode(node, matrice, visited);
+            if (nextNode != -1) {
 
-                    // 1️⃣ On marque l'arête comme parcourue pour tous les voisins
-                    stepManager.markEdge(currentNode, nextNode, NodeState.NODE_VISITED);
-
-                    // 2️⃣ On choisit la première arête pour continuer → NODE_KEPT
-                    if (!hasNext) {
-                        stepManager.markEdge(currentNode, nextNode, NodeState.NODE_KEPT);
-                        stack.push(nextIndex);
-                        stepManager.markNode(nextNode, NodeState.NODE_TO_VISIT);
-                        hasNext = true;
-                    }
-                }
-            }
-
-            // 3️⃣ Si aucun voisin non visité, backtrack
-            if (!hasNext) {
-                currentNode.setState(NodeState.NODE_BACKTRACK);
-                stepManager.markNode(currentNode, NodeState.NODE_BACKTRACK);
+                stack.push(nextNode);
+                finalPath.add(nextNode);
+            } else {
                 stack.pop();
             }
         }
-        System.out.println(stepManager);
+
         return stepManager;
     }
 
-
-
+    // =========================
+    // Getter pour finalPath
+    // =========================
+    public List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
+    }
 
     // =========================
     // Fonctions utilitaires
@@ -117,6 +104,11 @@ public class DFS {
         return nextNode;
     }
 
+    private void visitNode(int node, Set<Integer> visited, StepManager stepManager) {
+        visited.add(node);
+        visitOrder.add(node);
+
+    }
 
 
     private String[] getVertexNames(Graphe g) {

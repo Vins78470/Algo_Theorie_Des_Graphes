@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -77,6 +78,7 @@ public class Controller implements Initializable {
 
         // --- Charger graphe par défaut ---
         Platform.runLater(() -> {
+
             String defaultGraphFile = "../graphes/graphe.txt";
             File f = new File(defaultGraphFile);
             if (f.exists()) {
@@ -94,6 +96,8 @@ public class Controller implements Initializable {
 
             updateAlgorithmAvailability();
 
+            startComboBox.setDisable(true);
+            endComboBox.setDisable(true);
             if (algorithmComboBox != null) {
                 algorithmComboBox.setOnAction(e -> updateVertexComboBoxes());
             }
@@ -154,7 +158,7 @@ public class Controller implements Initializable {
                 String startVertex = startComboBox.getValue();
                 int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
 
-                stepManager = ((DFS) currentAlgo).getStepManager(currentGraph, startIndex);
+
                 res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, startIndex);
             }
 
@@ -231,8 +235,8 @@ public class Controller implements Initializable {
             return;
         }
 
-        stepManager.reset();
-        choiceAlgorithm();
+        // Exécute l'algorithme choisi
+        choiceAlgorithm(); // Cette méthode doit instancier currentAlgo et remplir res
 
         if (res != null) {
             stepsTextArea.setText(res[0]);
@@ -240,9 +244,26 @@ public class Controller implements Initializable {
         }
 
         GraphDrawer gD = new GraphDrawer(currentGraph);
+
+        // Dessine le graphe de base
         gD.drawGraph(graphCanvas);
-        gD.drawStepManagerSequentially(graphCanvas, stepManager, 1000);
+
+        // Récupérer le chemin final depuis l'algo
+        List<Integer> finalPath = new ArrayList<>();
+        if (currentAlgo instanceof DFS dfsAlgo) {
+            finalPath = dfsAlgo.getFinalPath();
+        }
+        else if (currentAlgo instanceof BFS bfsAlgo) {
+            finalPath = bfsAlgo.getFinalPath();
+        }
+        else if (currentAlgo instanceof Kruskal kruskalAlgo) {
+            finalPath = kruskalAlgo.getFinalPath();
+        }
+
+        // Dessiner uniquement le chemin final (sommets violets, arêtes rouges)
+        gD.drawFinalPath(graphCanvas, currentGraph, finalPath);
     }
+
 
     private void loadAndDrawGraph(String filepath) {
         try {
@@ -281,7 +302,7 @@ public class Controller implements Initializable {
             );
         }
 
-        algorithmComboBox.getSelectionModel().selectFirst();
+        //algorithmComboBox.getSelectionModel().selectFirst();
     }
 
     private void initVertexComboBoxes(Graphe graphe) {
