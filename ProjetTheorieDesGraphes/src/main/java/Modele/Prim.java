@@ -4,6 +4,12 @@ import java.util.*;
 
 public class Prim {
 
+    private static List<Integer> finalPath = new ArrayList<>();
+
+    public static List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
+    }
+
     public static String getResult(Graphe g, int start) {
         StringBuilder sb = new StringBuilder();
 
@@ -38,7 +44,39 @@ public class Prim {
             }
         }
         sb.append("Coût total = ").append(totalCost).append("\n");
+
+        // Construire le finalPath pour la visualisation
+        finalPath.clear();
+        if (n > 0) {
+            // Construire l'arbre comme adjacence à partir du tableau parent
+            Map<Integer, List<Integer>> tree = new HashMap<>();
+            for (int i = 0; i < n; i++) {
+                if (parent[i] != -1) {
+                    tree.computeIfAbsent(parent[i], k -> new ArrayList<>()).add(i);
+                    tree.computeIfAbsent(i, k -> new ArrayList<>()).add(parent[i]);
+                }
+            }
+
+            // Parcours DFS avec backtrack depuis le nœud de départ
+            boolean[] visitedDFS = new boolean[n];
+            generatePathWithBacktrack(start, tree, visitedDFS);
+        }
+
         return sb.toString();
+    }
+
+    private static void generatePathWithBacktrack(int node, Map<Integer, List<Integer>> tree, boolean[] visited) {
+        visited[node] = true;
+        finalPath.add(node);
+
+        List<Integer> neighbors = tree.getOrDefault(node, Collections.emptyList());
+        for (int neighbor : neighbors) {
+            if (!visited[neighbor]) {
+                generatePathWithBacktrack(neighbor, tree, visited);
+                // Backtrack : retour au nœud actuel
+                finalPath.add(node);
+            }
+        }
     }
 
     private static int minKey(int[] key, boolean[] visited, int n) {

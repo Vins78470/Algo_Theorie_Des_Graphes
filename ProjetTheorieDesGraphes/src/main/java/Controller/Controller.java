@@ -259,6 +259,12 @@ public class Controller implements Initializable {
         else if (currentAlgo instanceof Kruskal kruskalAlgo) {
             finalPath = kruskalAlgo.getFinalPath();
         }
+        else if(currentAlgo instanceof Prim ) {
+            finalPath = Prim.getFinalPath();
+        } else if (currentAlgo instanceof Dijkstra ) {
+            finalPath = Dijkstra.getFinalPath();
+
+        }
 
         // Dessiner uniquement le chemin final (sommets violets, arêtes rouges)
         gD.drawFinalPath(graphCanvas, currentGraph, finalPath);
