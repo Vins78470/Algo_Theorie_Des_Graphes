@@ -1,16 +1,17 @@
 package Modele;
 
 import Vue.GraphDrawer;
+import com.brunomnsilva.smartgraph.graph.*;
 import com.brunomnsilva.smartgraph.graph.Edge;
-import com.brunomnsilva.smartgraph.graph.Graph;
-import com.brunomnsilva.smartgraph.graph.GraphEdgeList;
-import com.brunomnsilva.smartgraph.graph.Vertex;
 import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextArea;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,15 @@ public class GraphManager {
 
 
     public static SmartGraphPanel<String, String> buildSmartGraph(Graphe g) {
-        Graph<String, String> sg = new GraphEdgeList<>();
+        Graph<String, String> sg;
+
+        // Choix de la structure selon orientation
+        if (g.isOriented()) {
+            sg = new DigraphEdgeList<>() {
+            };
+        } else {
+            sg = new GraphEdgeList<>();
+        }
 
         // Ajouter les sommets
         for (int i = 0; i < g.getNbSommets(); i++) {
@@ -31,13 +40,14 @@ public class GraphManager {
 
         // Ajouter les arêtes
         for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
+            for (int j = 0; j < n; j++) {
+                if (!g.isOriented() && j <= i) continue; // éviter doublons pour non orienté
+
                 if (matrix[i][j] > 0) {
                     String from = g.getVertexName(i);
                     String to = g.getVertexName(j);
                     int weight = matrix[i][j];
 
-                    // Élément unique interne (évite les collisions dans la structure)
                     String uniqueElement = from + "-" + to + "#" + weight;
 
                     try {
@@ -53,12 +63,12 @@ public class GraphManager {
         SmartCircularSortedPlacementStrategy placement = new SmartCircularSortedPlacementStrategy();
         SmartGraphPanel<String, String> graphView = new SmartGraphPanel<>(sg, props, placement);
 
-        // ✅ Afficher uniquement le poids comme label
+        // Afficher uniquement le poids comme label
         graphView.setEdgeLabelProvider(edgeElement -> {
             if (edgeElement.contains("#")) {
                 return edgeElement.split("#")[1]; // retourne juste le poids
             }
-            return edgeElement; // fallback
+            return edgeElement;
         });
 
         graphView.setAutomaticLayout(false);
@@ -136,8 +146,9 @@ public class GraphManager {
 
     // -----------------------------
     // Highlight path sur SmartGraphPanel
-    // -----------------------------
-    public static void highlightPath(SmartGraphPanel<String,String> panel, Graphe g, List<Integer> path) {
+
+
+    public static void highlightPathAnimated(SmartGraphPanel<String, String> panel, Graphe g, List<Integer> path, double delayMs) {
         if (panel == null || g == null || path == null || path.size() < 2) return;
 
         String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black;";
@@ -146,29 +157,38 @@ public class GraphManager {
         // Reset
         panel.getModel().vertices().forEach(v -> panel.getStylableVertex(v).setStyleInline(vertexDefault));
         panel.getModel().edges().forEach(e -> panel.getStylableEdge(e).setStyleInline(edgeDefault));
-
-        // Colorier le chemin
-        for (int i=0; i<path.size()-1; i++) {
-            String from = g.getVertexName(path.get(i));
-            String to   = g.getVertexName(path.get(i+1));
-
-            Vertex<String> vFrom = panel.getModel().vertices().stream().filter(v->v.element().equals(from)).findFirst().orElse(null);
-            Vertex<String> vTo   = panel.getModel().vertices().stream().filter(v->v.element().equals(to)).findFirst().orElse(null);
-
-            if (vFrom != null) panel.getStylableVertex(vFrom).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
-            if (vTo != null) panel.getStylableVertex(vTo).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
-
-            if (vFrom != null && vTo != null) {
-                Edge<String,String> e = panel.getModel().edges().stream()
-                        .filter(edge -> (edge.vertices()[0].element().equals(from) && edge.vertices()[1].element().equals(to)) ||
-                                (edge.vertices()[0].element().equals(to) && edge.vertices()[1].element().equals(from)))
-                        .findFirst().orElse(null);
-                if (e != null) panel.getStylableEdge(e).setStyleInline("-fx-stroke: red; -fx-stroke-width: 3;");
-            }
-        }
-
         panel.update();
+
+        Timeline timeline = new Timeline();
+        for (int i = 0; i < path.size() - 1; i++) {
+            final int index = i;
+            KeyFrame kf = new KeyFrame(Duration.millis(i * delayMs), event -> {
+                String from = g.getVertexName(path.get(index));
+                String to   = g.getVertexName(path.get(index + 1));
+
+                Vertex<String> vFrom = panel.getModel().vertices().stream()
+                        .filter(v -> v.element().equals(from)).findFirst().orElse(null);
+                Vertex<String> vTo = panel.getModel().vertices().stream()
+                        .filter(v -> v.element().equals(to)).findFirst().orElse(null);
+
+                if (vFrom != null) panel.getStylableVertex(vFrom).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                if (vTo != null) panel.getStylableVertex(vTo).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+
+                if (vFrom != null && vTo != null) {
+                    Edge<String, String> e = panel.getModel().edges().stream()
+                            .filter(edge -> (edge.vertices()[0].element().equals(from) && edge.vertices()[1].element().equals(to)) ||
+                                    (edge.vertices()[0].element().equals(to) && edge.vertices()[1].element().equals(from)))
+                            .findFirst().orElse(null);
+                    if (e != null) panel.getStylableEdge(e).setStyleInline("-fx-stroke: red; -fx-stroke-width: 3;");
+                }
+
+                panel.update();
+            });
+            timeline.getKeyFrames().add(kf);
+        }
+        timeline.play();
     }
+
 
     // -----------------------------
     // Interface pour factoriser runAlgorithm

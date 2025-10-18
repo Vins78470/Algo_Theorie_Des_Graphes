@@ -3,8 +3,8 @@ package Controller;
 import Modele.*;
 import Modele.GraphManager;
 
-
-import com.brunomnsilva.smartgraph.graph.Vertex;
+import com.brunomnsilva.smartgraph.graphview.SmartArrow;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphEdgeNode;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -34,7 +34,7 @@ public class Controller implements Initializable {
     private TextArea stepsTextArea;
 
     @FXML
-    private AnchorPane canvasAnchorPane; // Ancien canvas remplacé
+    private AnchorPane canvasAnchorPane;
 
     @FXML
     private TextArea resultTextArea;
@@ -53,11 +53,11 @@ public class Controller implements Initializable {
     private String[] res;
 
     private SmartGraphPanel<String, String> smartGraphPanel;
+    private boolean bound = false; // pour binder le resize une seule fois
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        // --- Charger graphe par défaut ---
         Platform.runLater(() -> {
             String defaultGraphFile = "../graphes/graphe.txt";
             File f = new File(defaultGraphFile);
@@ -66,10 +66,8 @@ public class Controller implements Initializable {
             } else {
                 currentGraph = GraphManager.initDefaultGraph(null, stepsTextArea);
                 displaySmartGraph(currentGraph);
-
             }
 
-            // Initialiser les ComboBox
             if (currentGraph != null) {
                 initVertexComboBoxes(currentGraph);
                 updateVertexComboBoxes();
@@ -79,10 +77,21 @@ public class Controller implements Initializable {
 
             startComboBox.setDisable(true);
             endComboBox.setDisable(true);
+
             if (algorithmComboBox != null) {
                 algorithmComboBox.setOnAction(e -> updateVertexComboBoxes());
             }
         });
+    }
+
+    /** --- Bind automatique pour redraw lors du resize --- */
+    private void bindSmartGraphToPane() {
+        if (bound) return; // bind une seule fois
+        bound = true;
+
+        // Ne pas redraw à chaque resize, juste resize le panel
+        smartGraphPanel.prefWidthProperty().bind(canvasAnchorPane.widthProperty());
+        smartGraphPanel.prefHeightProperty().bind(canvasAnchorPane.heightProperty());
     }
 
     /** --- Convertit et affiche le Graphe avec SmartGraphPanel --- */
@@ -92,30 +101,41 @@ public class Controller implements Initializable {
         canvasAnchorPane.getChildren().clear();
         canvasAnchorPane.getChildren().add(smartGraphPanel);
 
-        // Bind pour occuper tout le conteneur
+        // Bind les dimensions
         smartGraphPanel.prefWidthProperty().bind(canvasAnchorPane.widthProperty());
         smartGraphPanel.prefHeightProperty().bind(canvasAnchorPane.heightProperty());
 
-        // Attendre que le panel ait été affiché et ait une taille réelle
         Platform.runLater(() -> {
-            smartGraphPanel.init();               // initialise layout et positions
+            smartGraphPanel.init();
             smartGraphPanel.setAutomaticLayout(false);
 
-            // Style par défaut des sommets
+            // Style sommets
             String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black;";
             smartGraphPanel.getModel().vertices().forEach(v ->
                     smartGraphPanel.getStylableVertex(v).setStyleInline(vertexDefault)
             );
 
-            // Style par défaut des arêtes
+            // Style arêtes et labels
             String edgeDefault = "-fx-stroke: black; -fx-stroke-width: 2;";
-            smartGraphPanel.getModel().edges().forEach(e ->
-                    smartGraphPanel.getStylableEdge(e).setStyleInline(edgeDefault)
-            );
+            smartGraphPanel.getModel().edges().forEach(e -> {
+                SmartGraphEdgeNode<?, ?> edgeNode = (SmartGraphEdgeNode<?, ?>) smartGraphPanel.getStylableEdge(e);
+                edgeNode.setStyleInline(edgeDefault);
+
+                if (edgeNode.getAttachedLabel() != null) {
+                    edgeNode.getAttachedLabel().setTranslateY(-10);
+                    edgeNode.getAttachedLabel().setTranslateX(-10);
+                }
+
+                SmartArrow arrow = edgeNode.getAttachedArrow();
+                if (arrow != null) {
+                    arrow.setStyleInline("-fx-scale-x: 2; -fx-scale-y: 2;");
+                }
+            });
         });
 
+        // Bind une seule fois après le premier affichage
+        bindSmartGraphToPane();
     }
-
 
     @FXML
     private void onOpenGraphClicked() {
@@ -126,6 +146,8 @@ public class Controller implements Initializable {
             updateAlgorithmAvailability();
         }
     }
+
+
 
     private void loadAndDisplayGraph(String filepath) {
         try {
@@ -154,14 +176,12 @@ public class Controller implements Initializable {
         switch (selectedAlgo) {
             case "Parcours en profondeur (DFS)" -> {
                 currentAlgo = new DFS();
-                String startVertex = startComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
                 res = GraphManager.runDFS((DFS) currentAlgo, currentGraph, startIndex);
             }
             case "Parcours en largeur (BFS)" -> {
                 currentAlgo = new BFS();
-                String startVertex = startComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
                 res = GraphManager.runBFS((BFS) currentAlgo, currentGraph, startIndex);
             }
             case "Kruskal" -> {
@@ -170,32 +190,25 @@ public class Controller implements Initializable {
             }
             case "Prim" -> {
                 currentAlgo = new Prim();
-                String startVertex = startComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
                 res = GraphManager.runPrim((Prim) currentAlgo, currentGraph, startIndex);
             }
             case "Dijkstra" -> {
                 currentAlgo = new Dijkstra();
-                String startVertex = startComboBox.getValue();
-                String endVertex = endComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
-                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endComboBox.getValue());
                 res = GraphManager.runDijkstra((Dijkstra) currentAlgo, currentGraph, startIndex, endIndex);
             }
             case "Bellman-Ford" -> {
                 currentAlgo = new BellmanFord();
-                String startVertex = startComboBox.getValue();
-                String endVertex = endComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
-                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endComboBox.getValue());
                 res = GraphManager.runBellmanFord((BellmanFord) currentAlgo, currentGraph, startIndex, endIndex);
             }
             case "Floyd" -> {
                 currentAlgo = new FloydWarshall();
-                String startVertex = startComboBox.getValue();
-                String endVertex = endComboBox.getValue();
-                int startIndex = currentGraph.getAllVertexNames().indexOf(startVertex);
-                int endIndex = currentGraph.getAllVertexNames().indexOf(endVertex);
+                int startIndex = currentGraph.getAllVertexNames().indexOf(startComboBox.getValue());
+                int endIndex = currentGraph.getAllVertexNames().indexOf(endComboBox.getValue());
                 res = GraphManager.runFloydWarshall((FloydWarshall) currentAlgo, currentGraph, startIndex, endIndex);
             }
             default -> res = null;
@@ -216,7 +229,7 @@ public class Controller implements Initializable {
             resultTextArea.setText(res[1]);
         }
 
-        // Mettre en couleur les sommets/arêtes du chemin final
+        // Colorer le chemin final
         List<Integer> finalPath = List.of();
         if (currentAlgo instanceof DFS dfsAlgo) finalPath = dfsAlgo.getFinalPath();
         else if (currentAlgo instanceof BFS bfsAlgo) finalPath = bfsAlgo.getFinalPath();
@@ -224,7 +237,7 @@ public class Controller implements Initializable {
         else if (currentAlgo instanceof Prim) finalPath = Prim.getFinalPath();
         else if (currentAlgo instanceof Dijkstra) finalPath = Dijkstra.getFinalPath();
 
-        GraphManager.highlightPath(smartGraphPanel, currentGraph, finalPath);
+        GraphManager.highlightPathAnimated(smartGraphPanel, currentGraph, finalPath,1000);
     }
 
     private void updateAlgorithmAvailability() {
