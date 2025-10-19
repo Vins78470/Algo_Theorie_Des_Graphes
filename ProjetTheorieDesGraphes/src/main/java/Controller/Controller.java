@@ -246,19 +246,40 @@ public class Controller implements Initializable {
         if (currentGraph == null || algorithmComboBox == null) return;
 
         boolean hasNeg = GraphManager.hasNegativeWeight(currentGraph);
+        boolean isDirected = currentGraph.isOriented();
+
         algorithmComboBox.getItems().clear();
 
-        if (hasNeg) algorithmComboBox.getItems().addAll("Bellman-Ford", "Floyd");
-        else algorithmComboBox.getItems().addAll(
-                "Parcours en profondeur (DFS)",
-                "Parcours en largeur (BFS)",
-                "Kruskal",
-                "Prim",
-                "Dijkstra",
-                "Bellman-Ford",
-                "Floyd"
-        );
+        if (isDirected) {
+            // Graphe orienté : désactiver Prim et Kruskal
+            if (hasNeg) algorithmComboBox.getItems().addAll("Bellman-Ford", "Floyd");
+            else algorithmComboBox.getItems().addAll(
+                    "Parcours en profondeur (DFS)",
+                    "Parcours en largeur (BFS)",
+                    "Dijkstra",
+                    "Bellman-Ford",
+                    "Floyd"
+            );
+        } else {
+            // Graphe non orienté : tout dispo
+            if (hasNeg) algorithmComboBox.getItems().addAll("Bellman-Ford", "Floyd");
+            else algorithmComboBox.getItems().addAll(
+                    "Parcours en profondeur (DFS)",
+                    "Parcours en largeur (BFS)",
+                    "Kruskal",
+                    "Prim",
+                    "Dijkstra",
+                    "Bellman-Ford",
+                    "Floyd"
+            );
+        }
+
+        // Désactiver les comboBox si pas d’algos compatibles
+        boolean hasAlgo = !algorithmComboBox.getItems().isEmpty();
+        startComboBox.setDisable(!hasAlgo);
+        endComboBox.setDisable(!hasAlgo);
     }
+
 
     private void initVertexComboBoxes(Graphe graphe) {
         List<String> vertexNames = graphe.getAllVertexNames();
