@@ -236,6 +236,8 @@ public class Controller implements Initializable {
         else if (currentAlgo instanceof Kruskal kruskalAlgo) finalPath = kruskalAlgo.getFinalPath();
         else if (currentAlgo instanceof Prim) finalPath = Prim.getFinalPath();
         else if (currentAlgo instanceof Dijkstra) finalPath = Dijkstra.getFinalPath();
+        else if (currentAlgo instanceof BellmanFord bellmanFord) finalPath = bellmanFord.getFinalPath();
+        else if (currentAlgo instanceof FloydWarshall fw) finalPath = FloydWarshall.getFinalPath();
 
         GraphManager.highlightPathAnimated(smartGraphPanel, currentGraph, finalPath,1000);
     }

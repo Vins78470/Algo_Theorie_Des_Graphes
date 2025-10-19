@@ -50,37 +50,6 @@ public class DFS {
         return sb.toString();
     }
 
-    // =========================
-    // Partie Steps pour animation via StepManager
-    // =========================
-    public StepManager getStepManager(Graphe graphe, int startNode) {
-        StepManager stepManager = new StepManager();
-        int[][] matrice = graphe.getMatrix();
-        Set<Integer> visited = new HashSet<>();
-        Stack<Integer> stack = new Stack<>();
-        visitOrder.clear();
-        finalPath.clear();
-
-        stack.push(startNode);
-        finalPath.add(startNode);
-
-        while (!stack.isEmpty()) {
-            int node = stack.peek();
-
-            if (!visited.contains(node)) visitNode(node, visited, stepManager);
-
-            int nextNode = findNextNode(node, matrice, visited);
-            if (nextNode != -1) {
-
-                stack.push(nextNode);
-                finalPath.add(nextNode);
-            } else {
-                stack.pop();
-            }
-        }
-
-        return stepManager;
-    }
 
     // =========================
     // Getter pour finalPath
@@ -104,11 +73,6 @@ public class DFS {
         return nextNode;
     }
 
-    private void visitNode(int node, Set<Integer> visited, StepManager stepManager) {
-        visited.add(node);
-        visitOrder.add(node);
-
-    }
 
 
     private String[] getVertexNames(Graphe g) {

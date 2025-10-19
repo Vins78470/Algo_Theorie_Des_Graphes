@@ -1,6 +1,5 @@
 package Modele;
 
-import Vue.GraphDrawer;
 import com.brunomnsilva.smartgraph.graph.*;
 import com.brunomnsilva.smartgraph.graph.Edge;
 import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
@@ -8,12 +7,10 @@ import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextArea;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GraphManager {
@@ -148,48 +145,80 @@ public class GraphManager {
     // Highlight path sur SmartGraphPanel
 
 
+
+
     public static void highlightPathAnimated(SmartGraphPanel<String, String> panel, Graphe g, List<Integer> path, double delayMs) {
-        if (panel == null || g == null || path == null || path.size() < 2) return;
+        if (panel == null || g == null || path == null || path.isEmpty()) {
+            System.out.println("DEBUG: Panel/Graph/Path null ou vide!");
+            return;
+        }
+
+        System.out.println("DEBUG: Path size = " + path.size());
+        for (int i = 0; i < path.size(); i++) {
+            System.out.println("  [" + i + "] = " + path.get(i) + " (" + g.getVertexName(path.get(i)) + ")");
+        }
 
         String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black;";
         String edgeDefault   = "-fx-stroke: black; -fx-stroke-width: 2;";
 
-        // Reset
+        // Reset tout
         panel.getModel().vertices().forEach(v -> panel.getStylableVertex(v).setStyleInline(vertexDefault));
         panel.getModel().edges().forEach(e -> panel.getStylableEdge(e).setStyleInline(edgeDefault));
         panel.update();
 
+        // Cas d'un seul sommet
+        if (path.size() == 1) {
+            System.out.println("DEBUG: Colorie 1 sommet");
+            String vertexName = g.getVertexName(path.get(0));
+            Vertex<String> v = panel.getModel().vertices().stream().filter(x -> x.element().equals(vertexName)).findFirst().orElse(null);
+            if (v != null) {
+                panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                panel.update();
+            }
+            return;
+        }
+
         Timeline timeline = new Timeline();
-        for (int i = 0; i < path.size() - 1; i++) {
+
+        // Ajouter une KeyFrame pour CHAQUE sommet du chemin
+        for (int i = 0; i < path.size(); i++) {
             final int index = i;
-            KeyFrame kf = new KeyFrame(Duration.millis(i * delayMs), event -> {
-                String from = g.getVertexName(path.get(index));
-                String to   = g.getVertexName(path.get(index + 1));
 
-                Vertex<String> vFrom = panel.getModel().vertices().stream()
-                        .filter(v -> v.element().equals(from)).findFirst().orElse(null);
-                Vertex<String> vTo = panel.getModel().vertices().stream()
-                        .filter(v -> v.element().equals(to)).findFirst().orElse(null);
+            // KeyFrame au temps (index * delayMs) pour colorer le sommet
+            KeyFrame kf = new KeyFrame(Duration.millis(index * delayMs), event -> {
+                String vertexName = g.getVertexName(path.get(index));
+                Vertex<String> v = panel.getModel().vertices().stream().filter(x -> x.element().equals(vertexName)).findFirst().orElse(null);
 
-                if (vFrom != null) panel.getStylableVertex(vFrom).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
-                if (vTo != null) panel.getStylableVertex(vTo).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                if (v != null) {
+                    panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                    System.out.println("DEBUG KeyFrame " + index + ": Colorié " + vertexName);
+                }
 
-                if (vFrom != null && vTo != null) {
+                // Si c'est pas le dernier sommet, colorer aussi l'arête
+                if (index < path.size() - 1) {
+                    String from = g.getVertexName(path.get(index));
+                    String to = g.getVertexName(path.get(index + 1));
+
                     Edge<String, String> e = panel.getModel().edges().stream()
                             .filter(edge -> (edge.vertices()[0].element().equals(from) && edge.vertices()[1].element().equals(to)) ||
                                     (edge.vertices()[0].element().equals(to) && edge.vertices()[1].element().equals(from)))
                             .findFirst().orElse(null);
-                    if (e != null) panel.getStylableEdge(e).setStyleInline("-fx-stroke: red; -fx-stroke-width: 3;");
+
+                    if (e != null) {
+                        panel.getStylableEdge(e).setStyleInline("-fx-stroke: red; -fx-stroke-width: 3;");
+                        System.out.println("DEBUG KeyFrame " + index + ": Arête " + from + " -> " + to);
+                    }
                 }
 
                 panel.update();
             });
+
             timeline.getKeyFrames().add(kf);
         }
+
+        System.out.println("DEBUG: Lancement timeline avec " + path.size() + " KeyFrames");
         timeline.play();
     }
-
-
     // -----------------------------
     // Interface pour factoriser runAlgorithm
     // -----------------------------

@@ -7,6 +7,7 @@ public class FloydWarshall {
     private double[][] W;
     private int[][] P;
     private String[] noms;
+    private static List<Integer> finalPath = new ArrayList<>();
 
     public FloydWarshall() {}
 
@@ -88,6 +89,33 @@ public class FloydWarshall {
         sb.append("\n");
     }
 
+    // Construire le chemin final et le stocker
+    private void buildFinalPath(int start, int end) {
+        finalPath.clear();
+
+        if (W[start][end] == Double.POSITIVE_INFINITY) {
+            return; // Pas de chemin
+        }
+
+        List<String> cheminStr = new ArrayList<>();
+        int v = end;
+        while (v != -1) {
+            cheminStr.add(noms[v]);
+            v = P[start][v];
+        }
+        Collections.reverse(cheminStr);
+
+        // Convertir en indices
+        for (String nomVille : cheminStr) {
+            for (int i = 0; i < noms.length; i++) {
+                if (noms[i].equals(nomVille)) {
+                    finalPath.add(i);
+                    break;
+                }
+            }
+        }
+    }
+
     // Méthode publique pour afficher étapes + chemin
     public String getResult(Graphe g, int start, int end) {
         String etapes = computeFloydWarshall(g);
@@ -95,20 +123,29 @@ public class FloydWarshall {
         if (start < 0 || start >= noms.length || end < 0 || end >= noms.length)
             return etapes + "Indice invalide.";
 
+        buildFinalPath(start, end);
+
         if (W[start][end] == Double.POSITIVE_INFINITY)
-            return etapes + "Aucun chemin n’existe.";
+            return etapes + "Aucun chemin n'existe.";
 
-        List<String> chemin = new ArrayList<>();
-        int v = end;
-        while (v != -1) {
-            chemin.add(noms[v]);
-            v = P[start][v];
+        etapes += "Chemin le plus court de " + noms[start] + " à " + noms[end] + " : ";
+
+        if (!finalPath.isEmpty()) {
+            StringBuilder cheminStr = new StringBuilder();
+            for (int i = 0; i < finalPath.size(); i++) {
+                if (i > 0) cheminStr.append(" → ");
+                cheminStr.append(noms[finalPath.get(i)]);
+            }
+            etapes += cheminStr.toString();
         }
-        Collections.reverse(chemin);
 
-        etapes += "Chemin le plus court de " + noms[start] + " à " + noms[end] + " : " +
-                String.join(" → ", chemin) + "   →   Distance = " + (int) W[start][end] + "\n";
+        etapes += "   →   Distance = " + (int) W[start][end] + "\n";
 
         return etapes;
+    }
+
+    // Getter statique pour le chemin final
+    public static List<Integer> getFinalPath() {
+        return new ArrayList<>(finalPath);
     }
 }
