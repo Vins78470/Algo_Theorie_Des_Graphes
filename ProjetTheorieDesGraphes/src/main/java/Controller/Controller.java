@@ -95,13 +95,13 @@ public class Controller implements Initializable {
     }
 
     /** --- Convertit et affiche le Graphe avec SmartGraphPanel --- */
+    /** --- Convertit et affiche le Graphe avec SmartGraphPanel --- */
     private void displaySmartGraph(Graphe g) {
         smartGraphPanel = GraphManager.buildSmartGraph(g);
 
         canvasAnchorPane.getChildren().clear();
         canvasAnchorPane.getChildren().add(smartGraphPanel);
 
-        // Bind les dimensions
         smartGraphPanel.prefWidthProperty().bind(canvasAnchorPane.widthProperty());
         smartGraphPanel.prefHeightProperty().bind(canvasAnchorPane.heightProperty());
 
@@ -109,34 +109,34 @@ public class Controller implements Initializable {
             smartGraphPanel.init();
             smartGraphPanel.setAutomaticLayout(false);
 
-            // Style sommets
+            // Style des sommets
             String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black;";
             smartGraphPanel.getModel().vertices().forEach(v ->
                     smartGraphPanel.getStylableVertex(v).setStyleInline(vertexDefault)
             );
 
-            // Style arêtes et labels
-            String edgeDefault = "-fx-stroke: black; -fx-stroke-width: 2;";
+            // Style des arêtes - tout en noir plein
+            String edgeStyle = "-fx-stroke: black; -fx-stroke-width: 1.5; -fx-fill: transparent;";
             smartGraphPanel.getModel().edges().forEach(e -> {
-                SmartGraphEdgeNode<?, ?> edgeNode = (SmartGraphEdgeNode<?, ?>) smartGraphPanel.getStylableEdge(e);
-                edgeNode.setStyleInline(edgeDefault);
+                SmartGraphEdgeNode<?, ?> edgeNode =
+                        (SmartGraphEdgeNode<?, ?>) smartGraphPanel.getStylableEdge(e);
 
-                if (edgeNode.getAttachedLabel() != null) {
-                    edgeNode.getAttachedLabel().setTranslateY(-10);
-                    edgeNode.getAttachedLabel().setTranslateX(-10);
-                }
+                edgeNode.setStyle(edgeStyle);
 
                 SmartArrow arrow = edgeNode.getAttachedArrow();
                 if (arrow != null) {
-                    arrow.setStyleInline("-fx-scale-x: 2; -fx-scale-y: 2;");
+                    arrow.setStyle("-fx-fill: black; -fx-stroke: black; -fx-stroke-width: 1.2;");
+                }
+
+                if (edgeNode.getAttachedLabel() != null) {
+                    edgeNode.getAttachedLabel().setTranslateY(-8);
+                    edgeNode.getAttachedLabel().setTranslateX(-8);
                 }
             });
         });
 
-        // Bind une seule fois après le premier affichage
         bindSmartGraphToPane();
     }
-
     @FXML
     private void onOpenGraphClicked() {
         Stage stage = (Stage) IdOpenGraph.getParentPopup().getOwnerWindow();

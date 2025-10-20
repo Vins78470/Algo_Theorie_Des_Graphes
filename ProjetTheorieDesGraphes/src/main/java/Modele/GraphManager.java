@@ -40,7 +40,7 @@ public class GraphManager {
             for (int j = 0; j < n; j++) {
                 if (!g.isOriented() && j <= i) continue; // éviter doublons pour non orienté
 
-                if (matrix[i][j] > 0) {
+                if (matrix[i][j] != 0) {
                     String from = g.getVertexName(i);
                     String to = g.getVertexName(j);
                     int weight = matrix[i][j];
@@ -67,7 +67,8 @@ public class GraphManager {
             }
             return edgeElement;
         });
-
+        g.printMatrix();
+        System.out.println(graphView.getModel());
         graphView.setAutomaticLayout(false);
         return graphView;
     }
@@ -144,9 +145,6 @@ public class GraphManager {
     // -----------------------------
     // Highlight path sur SmartGraphPanel
 
-
-
-
     public static void highlightPathAnimated(SmartGraphPanel<String, String> panel, Graphe g, List<Integer> path, double delayMs) {
         if (panel == null || g == null || path == null || path.isEmpty()) {
             System.out.println("DEBUG: Panel/Graph/Path null ou vide!");
@@ -158,21 +156,29 @@ public class GraphManager {
             System.out.println("  [" + i + "] = " + path.get(i) + " (" + g.getVertexName(path.get(i)) + ")");
         }
 
-        String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black;";
-        String edgeDefault   = "-fx-stroke: black; -fx-stroke-width: 2;";
+        String vertexDefault = "-fx-fill: #2E5C8A; -fx-stroke: black; -fx-stroke-width: 1;";
+        String edgeDefault   = "-fx-stroke: black; -fx-stroke-width: 1.5; -fx-fill: transparent; -fx-stroke-line-cap: butt;";
 
-        // Reset tout
-        panel.getModel().vertices().forEach(v -> panel.getStylableVertex(v).setStyleInline(vertexDefault));
-        panel.getModel().edges().forEach(e -> panel.getStylableEdge(e).setStyleInline(edgeDefault));
+        // Reset tout avec le style COMPLET
+        panel.getModel().vertices().forEach(v ->
+                panel.getStylableVertex(v).setStyleInline(vertexDefault)
+        );
+
+        panel.getModel().edges().forEach(e ->
+                panel.getStylableEdge(e).setStyleInline(edgeDefault)
+        );
+
         panel.update();
 
         // Cas d'un seul sommet
         if (path.size() == 1) {
             System.out.println("DEBUG: Colorie 1 sommet");
             String vertexName = g.getVertexName(path.get(0));
-            Vertex<String> v = panel.getModel().vertices().stream().filter(x -> x.element().equals(vertexName)).findFirst().orElse(null);
+            Vertex<String> v = panel.getModel().vertices().stream()
+                    .filter(x -> x.element().equals(vertexName))
+                    .findFirst().orElse(null);
             if (v != null) {
-                panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black; -fx-stroke-width: 1;");
                 panel.update();
             }
             return;
@@ -180,21 +186,21 @@ public class GraphManager {
 
         Timeline timeline = new Timeline();
 
-        // Ajouter une KeyFrame pour CHAQUE sommet du chemin
         for (int i = 0; i < path.size(); i++) {
             final int index = i;
 
-            // KeyFrame au temps (index * delayMs) pour colorer le sommet
             KeyFrame kf = new KeyFrame(Duration.millis(index * delayMs), event -> {
                 String vertexName = g.getVertexName(path.get(index));
-                Vertex<String> v = panel.getModel().vertices().stream().filter(x -> x.element().equals(vertexName)).findFirst().orElse(null);
+                Vertex<String> v = panel.getModel().vertices().stream()
+                        .filter(x -> x.element().equals(vertexName))
+                        .findFirst().orElse(null);
 
                 if (v != null) {
-                    panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black;");
+                    // ✅ Réappliquer le style COMPLET avec toutes les propriétés
+                    panel.getStylableVertex(v).setStyleInline("-fx-fill: violet; -fx-stroke: black; -fx-stroke-width: 1;");
                     System.out.println("DEBUG KeyFrame " + index + ": Colorié " + vertexName);
                 }
 
-                // Si c'est pas le dernier sommet, colorer aussi l'arête
                 if (index < path.size() - 1) {
                     String from = g.getVertexName(path.get(index));
                     String to = g.getVertexName(path.get(index + 1));
@@ -205,7 +211,10 @@ public class GraphManager {
                             .findFirst().orElse(null);
 
                     if (e != null) {
-                        panel.getStylableEdge(e).setStyleInline("-fx-stroke: red; -fx-stroke-width: 3;");
+                        // ✅ Style COMPLET avec toutes les propriétés pour éviter l'empilement
+                        panel.getStylableEdge(e).setStyleInline(
+                                "-fx-stroke: red; -fx-stroke-width: 2.0; -fx-fill: transparent; -fx-stroke-line-cap: butt;"
+                        );
                         System.out.println("DEBUG KeyFrame " + index + ": Arête " + from + " -> " + to);
                     }
                 }
