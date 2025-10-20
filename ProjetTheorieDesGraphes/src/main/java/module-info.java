@@ -14,9 +14,9 @@ module org.example.projettheoriedesgraphes {
     opens org.example.projettheoriedesgraphes to javafx.fxml;
     opens Controller to javafx.fxml;
     opens Helpers to javafx.fxml;
-    opens Vue to javafx.fxml;
+    //opens Vue to javafx.fxml;
 
-    exports Vue;  // Ajouter cette ligne
+   // exports Vue;  // Ajouter cette ligne
     exports Tests; // ✅ rend le package des tests accessible (par exemple à IntelliJ / Maven / Gradle)
     exports org.example.projettheoriedesgraphes;
 }

@@ -7,13 +7,16 @@ import java.util.*;
  */
 public class BellmanFord {
 
+    private List<Integer> finalPath = new ArrayList<>(); // ✅ Chemin final stocké ici
+
     public BellmanFord() {
         // Constructeur pour compatibilité graphique
     }
 
-    /**
-     * Lance Bellman-Ford entre deux sommets donnés par leur nom
-     */
+    public List<Integer> getFinalPath() {  // ✅ Getter public
+        return finalPath;
+    }
+
     public String run(Graphe g, String sourceName, String destName) {
         int n = g.getMatrix().length;
         String[] noms = new String[n];
@@ -32,9 +35,6 @@ public class BellmanFord {
         return getResult(g, start, end);
     }
 
-    /**
-     * Calcule le plus court chemin de start à end avec Bellman-Ford et affiche les étapes
-     */
     public String getResult(Graphe g, int start, int end) {
         int n = g.getMatrix().length;
         int[][] mat = g.getMatrix();
@@ -49,8 +49,7 @@ public class BellmanFord {
 
         StringBuilder sb = new StringBuilder();
 
-
-        // --- Relaxation (n-1 fois) avec affichage des étapes ---
+        // --- Relaxation (n-1 fois) ---
         for (int k = 1; k <= n - 1; k++) {
             boolean change = false;
             sb.append("=== Étape k = ").append(k).append(" ===\n");
@@ -80,25 +79,25 @@ public class BellmanFord {
             }
         }
 
-
         // --- Cas où aucun chemin n’existe ---
         if (dist[end] == Double.POSITIVE_INFINITY) {
             sb.append("Aucun chemin n’existe entre " + noms[start] + " et " + noms[end] + ".\n");
+            finalPath.clear(); // ✅ Aucune solution
             return sb.toString();
         }
 
         // --- Reconstruction du chemin à rebours ---
-        List<String> chemin = new ArrayList<>();
+        finalPath.clear(); // ✅ Vide avant d'ajouter
         int v = end;
         while (v != -1) {
-            chemin.add(noms[v]);
+            finalPath.add(v);
             v = pere[v];
         }
-        Collections.reverse(chemin);
+        Collections.reverse(finalPath);
 
-        // --- Affichage du chemin final ---
+        // --- Affichage ---
         sb.append("Chemin le plus court de ").append(noms[start]).append(" à ").append(noms[end]).append(" :\n");
-        sb.append(String.join(" → ", chemin));
+        sb.append(String.join(" → ", finalPath.stream().map(i -> noms[i]).toArray(String[]::new)));
         sb.append("   →   Distance = ").append((int) dist[end]).append("\n");
 
         return sb.toString();
