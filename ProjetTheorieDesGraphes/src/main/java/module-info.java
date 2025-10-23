@@ -17,6 +17,6 @@ module org.example.projettheoriedesgraphes {
     //opens Vue to javafx.fxml;
 
    // exports Vue;  // Ajouter cette ligne
-    exports Tests; // ✅ rend le package des tests accessible (par exemple à IntelliJ / Maven / Gradle)
+    exports Tests; //  rend le package des tests accessible (par exemple à IntelliJ / Maven / Gradle)
     exports org.example.projettheoriedesgraphes;
 }

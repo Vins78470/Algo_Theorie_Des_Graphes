@@ -2,16 +2,49 @@ package Modele;
 
 import java.util.*;
 
+/**
+ * Implémentation de l’algorithme de Floyd-Warshall.
+ *
+ * Cet algorithme calcule les plus courts chemins entre toutes les paires de sommets
+ * d’un graphe pondéré, qu’il soit orienté ou non.
+ *
+ * Le principe repose sur la mise à jour progressive d’une matrice de distances :
+ * à chaque itération, on introduit un sommet intermédiaire k et on vérifie si le
+ * chemin i → k → j est plus court que le chemin direct i → j.
+ *
+ * Il peut gérer des poids négatifs, mais pas de cycles absorbants
+ * (somme négative infinie).
+ *
+ * L’implémentation conserve :
+ * - la matrice des distances (W)
+ * - la matrice des prédécesseurs (P)
+ * - le chemin final entre deux sommets spécifiques
+ * - un texte descriptif détaillant chaque étape du calcul
+ */
 public class FloydWarshall {
 
+    /** Matrice des distances (W[i][j] = distance minimale entre i et j). */
     private double[][] W;
+
+    /** Matrice des prédécesseurs (P[i][j] = indice du prédécesseur de j sur le plus court chemin depuis i). */
     private int[][] P;
+
+    /** Tableau contenant les noms des sommets pour l’affichage. */
     private String[] noms;
+
+    /** Liste du chemin final utilisé pour la visualisation graphique. */
     private static List<Integer> finalPath = new ArrayList<>();
 
+    /** Constructeur par défaut. */
     public FloydWarshall() {}
 
-    // Calcul complet avec affichage des étapes
+    /**
+     * Exécute le calcul complet de l’algorithme de Floyd-Warshall
+     * et génère un texte détaillant les étapes de mise à jour.
+     *
+     * @param g le graphe sur lequel exécuter l’algorithme
+     * @return chaîne décrivant les différentes étapes du calcul
+     */
     private String computeFloydWarshall(Graphe g) {
         int n = g.getMatrix().length;
         noms = new String[n];
@@ -21,6 +54,7 @@ public class FloydWarshall {
         P = new int[n][n];
         int[][] M = g.getMatrix();
 
+        // --- Initialisation des matrices ---
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i == j) W[i][j] = 0;
@@ -35,6 +69,7 @@ public class FloydWarshall {
         sb.append("=== Matrice initiale ===\n");
         appendMatrix(sb);
 
+        // --- Étapes principales (introduction des sommets intermédiaires) ---
         for (int k = 0; k < n; k++) {
             sb.append("=== Étape k = ").append(k).append(" ===\n");
             for (int i = 0; i < n; i++) {
@@ -49,9 +84,10 @@ public class FloydWarshall {
             appendMatrix(sb);
         }
 
+        // --- Détection de cycle absorbant ---
         for (int i = 0; i < n; i++) {
             if (W[i][i] < 0) {
-                sb.append("⚠️ Cycle absorbant détecté (poids négatif).\n");
+                sb.append("Cycle absorbant détecté (poids négatif).\n");
                 return sb.toString();
             }
         }
@@ -61,10 +97,15 @@ public class FloydWarshall {
         return sb.toString();
     }
 
-    // Affichage de la matrice avec bordures et largeur adaptée
+    /**
+     * Ajoute à la chaîne donnée une représentation lisible de la matrice courante.
+     * Chaque cellule contient la distance minimale entre deux sommets, ou ∞ si aucun chemin n’existe.
+     *
+     * @param sb StringBuilder dans lequel la matrice est ajoutée
+     */
     private void appendMatrix(StringBuilder sb) {
         int n = W.length;
-        int cellWidth = 9; // largeur fixe plus grande pour noms longs
+        int cellWidth = 9; // Largeur fixe pour l’alignement visuel
 
         // Ligne de séparation
         String sep = "+";
@@ -72,12 +113,12 @@ public class FloydWarshall {
 
         sb.append(sep).append("\n");
 
-        // En-tête
+        // En-tête (noms des sommets)
         sb.append("|").append(String.format("%" + cellWidth + "s", ""));
         for (String nom : noms) sb.append("|").append(String.format("%" + cellWidth + "s", nom));
         sb.append("|\n").append(sep).append("\n");
 
-        // Contenu
+        // Contenu (valeurs de la matrice)
         for (int i = 0; i < n; i++) {
             sb.append("|").append(String.format("%" + cellWidth + "s", noms[i]));
             for (int j = 0; j < n; j++) {
@@ -89,12 +130,18 @@ public class FloydWarshall {
         sb.append("\n");
     }
 
-    // Construire le chemin final et le stocker
+    /**
+     * Construit le chemin le plus court entre deux sommets
+     * à partir de la matrice des prédécesseurs.
+     *
+     * @param start indice du sommet source
+     * @param end indice du sommet destination
+     */
     private void buildFinalPath(int start, int end) {
         finalPath.clear();
 
         if (W[start][end] == Double.POSITIVE_INFINITY) {
-            return; // Pas de chemin
+            return; // Aucun chemin n’existe
         }
 
         List<String> cheminStr = new ArrayList<>();
@@ -105,7 +152,7 @@ public class FloydWarshall {
         }
         Collections.reverse(cheminStr);
 
-        // Convertir en indices
+        // Conversion des noms en indices
         for (String nomVille : cheminStr) {
             for (int i = 0; i < noms.length; i++) {
                 if (noms[i].equals(nomVille)) {
@@ -116,7 +163,16 @@ public class FloydWarshall {
         }
     }
 
-    // Méthode publique pour afficher étapes + chemin
+    /**
+     * Exécute l’algorithme complet et retourne un rapport contenant :
+     * - les matrices à chaque étape
+     * - le plus court chemin trouvé entre les deux sommets spécifiés
+     *
+     * @param g graphe à traiter
+     * @param start indice du sommet de départ
+     * @param end indice du sommet d’arrivée
+     * @return chaîne de texte contenant le déroulement complet et le résultat final
+     */
     public String getResult(Graphe g, int start, int end) {
         String etapes = computeFloydWarshall(g);
 
@@ -144,7 +200,12 @@ public class FloydWarshall {
         return etapes;
     }
 
-    // Getter statique pour le chemin final
+    /**
+     * Retourne la liste des indices correspondant au plus court chemin calculé.
+     * Cette liste est utilisée pour la mise en surbrillance dans l’affichage graphique.
+     *
+     * @return liste des indices du chemin final
+     */
     public static List<Integer> getFinalPath() {
         return new ArrayList<>(finalPath);
     }
