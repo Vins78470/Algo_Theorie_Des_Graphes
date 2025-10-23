@@ -2,33 +2,49 @@ package Modele;
 
 import java.util.*;
 
+/**
+ * Implémentation de l’algorithme de Prim.
+ *
+ * L’algorithme de Prim permet de construire un arbre couvrant minimal (ACM)
+ * dans un graphe pondéré non orienté.
+ * Contrairement à Kruskal, qui trie globalement les arêtes,
+ * Prim étend progressivement un arbre en ajoutant à chaque étape
+ * l’arête de poids minimal connectant un sommet déjà inclus à un sommet extérieur.
+ *
+ * Cette classe fournit :
+ * - l’affichage des étapes d’exécution détaillées,
+ * - le coût total de l’arbre couvrant minimal,
+ * - et une liste ordonnée {@code finalPath} utilisée pour la visualisation graphique.
+ *
+ */
 public class Prim {
 
+    /** Liste statique du chemin final pour la visualisation graphique */
     private static final List<Integer> finalPath = new ArrayList<>();
 
+    /**
+     * Retourne le chemin final construit après l’exécution de l’algorithme.
+     *
+     * @return liste d’indices représentant les sommets dans l’ordre de construction
+     */
     public static List<Integer> getFinalPath() {
         return new ArrayList<>(finalPath);
     }
 
+    /**
+     * Exécute l’algorithme de Prim sur le graphe donné, à partir d’un sommet de départ.
+     *
+     * @param g graphe pondéré non orienté
+     * @param start indice du sommet de départ
+     * @return description textuelle du déroulement complet et du résultat final
+     */
     public static String getResult(Graphe g, int start) {
         StringBuilder sb = new StringBuilder();
-
-        System.out.println("\n========== DEBUG PRIM START ==========");
-        System.out.println("Graphe : " + g);
-        System.out.println("Start : " + start + " (" + g.getVertexName(start) + ")");
 
         int[][] mat = g.getMatrix();
         int n = mat.length;
 
-        System.out.println("\n--- Matrice d'adjacence ---");
-        for (int i = 0; i < n; i++) {
-            System.out.print(String.format("%10s : ", g.getVertexName(i)));
-            for (int j = 0; j < n; j++) {
-                System.out.print(String.format("%5d ", mat[i][j]));
-            }
-            System.out.println();
-        }
-
+        // --- Initialisation des structures ---
         boolean[] visited = new boolean[n];
         int[] parent = new int[n];
         int[] key = new int[n];
@@ -36,64 +52,46 @@ public class Prim {
         Arrays.fill(parent, -1);
         key[start] = 0;
 
-        System.out.println("\n--- État initial ---");
-        System.out.println("key[] = " + Arrays.toString(key));
-        System.out.println("parent[] = " + Arrays.toString(parent));
-
-        System.out.println("\n--- Exécution Prim ---");
+        // --- Début du processus ---
+        sb.append("Résultat de l’algorithme de Prim (départ : ")
+                .append(g.getVertexName(start))
+                .append(")\n\n");
 
         for (int iter = 0; iter < n - 1; iter++) {
-            System.out.println("\n=== Itération " + iter + " ===");
 
             int u = minKey(key, visited, n);
-            System.out.println("minKey retourné : u = " + u);
-
             if (u == -1) {
-                System.out.println("ERROR: minKey = -1, graphe non connexe!");
                 sb.append("Erreur : graphe non connexe ou invalide\n");
                 break;
             }
 
-            System.out.println("Nœud sélectionné : " + g.getVertexName(u) + " (key=" + key[u] + ")");
             visited[u] = true;
-            System.out.println("visited[" + u + "] = true");
 
-            System.out.println("\nVérification des voisins de " + g.getVertexName(u) + ":");
+            // Mise à jour des sommets adjacents
             for (int v = 0; v < n; v++) {
-                System.out.println("  [" + u + "][" + v + "] : mat=" + mat[u][v] +
-                        " | visited[" + v + "]=" + visited[v] +
-                        " | key[" + v + "]=" + key[v]);
-
                 if (mat[u][v] > 0 && !visited[v] && mat[u][v] < key[v]) {
-                    System.out.println("    ✓ UPDATE: parent[" + v + "]=" + u + ", key[" + v + "]=" + mat[u][v]);
                     parent[v] = u;
                     key[v] = mat[u][v];
-                } else if (mat[u][v] > 0) {
-                    System.out.println("    ✗ Pas d'update: mat>0=" + (mat[u][v]>0) +
-                            " !visited=" + (!visited[v]) + " mat<key=" + (mat[u][v]<key[v]));
                 }
             }
-
-            System.out.println("État après itération " + iter + ":");
-            System.out.println("  key[] = " + Arrays.toString(key));
-            System.out.println("  parent[] = " + Arrays.toString(parent));
         }
 
-        System.out.println("\n--- Résultat final ---");
-        sb.append("Résultat de Prim (départ : ").append(g.getVertexName(start)).append(")\n");
+        // --- Construction du résultat ---
         int totalCost = 0;
         for (int i = 0; i < n; i++) {
             if (parent[i] != -1) {
-                int cost = mat[parent[i]][i];  // ← BON SENS : parent[i] → i
-                System.out.println("Arête : [" + parent[i] + "][" + i + "] = " +
-                        g.getVertexName(parent[i]) + " — " + g.getVertexName(i) + " : " + cost);
+                int cost = mat[parent[i]][i];
                 sb.append(String.format("%s — %s : %d\n",
-                        g.getVertexName(parent[i]), g.getVertexName(i), cost));
+                        g.getVertexName(parent[i]),
+                        g.getVertexName(i),
+                        cost));
                 totalCost += cost;
             }
         }
+
         sb.append("Coût total = ").append(totalCost).append("\n");
 
+        // --- Construction du chemin final pour l’affichage graphique ---
         finalPath.clear();
         boolean[] addedToPath = new boolean[n];
         finalPath.add(start);
@@ -106,23 +104,27 @@ public class Prim {
             }
         }
 
-        System.out.println("\nfinalPath = " + finalPath);
-        System.out.println("========== DEBUG PRIM END ==========\n");
-
         return sb.toString();
     }
 
+    /**
+     * Sélectionne le sommet non visité ayant la plus petite clé (distance minimale).
+     *
+     * @param key tableau des poids minimaux
+     * @param visited tableau des sommets déjà inclus dans l’arbre
+     * @param n nombre total de sommets
+     * @return indice du sommet avec la clé minimale, ou -1 si aucun sommet valide
+     */
     private static int minKey(int[] key, boolean[] visited, int n) {
-        System.out.println("  [minKey] key=" + Arrays.toString(key) + " visited=" + Arrays.toString(visited));
-        int min = Integer.MAX_VALUE, minIndex = -1;
+        int min = Integer.MAX_VALUE;
+        int minIndex = -1;
+
         for (int v = 0; v < n; v++) {
             if (!visited[v] && key[v] < min) {
                 min = key[v];
                 minIndex = v;
-                System.out.println("    v=" + v + " : !visited && key<min → minIndex=" + v + " min=" + min);
             }
         }
-        System.out.println("  [minKey] retour : " + minIndex);
         return minIndex;
     }
 }
