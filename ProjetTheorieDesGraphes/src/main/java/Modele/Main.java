@@ -22,7 +22,7 @@ public class Main {
      * @param args arguments de ligne de commande (non utilisés)
      */
     public static void main(String[] args) {
-        System.out.println("=== Projet Théorie des Graphes - EFREI ===\n");
+        System.out.println("=== Projet Théorie des Graphes ===\n");
 
         // Initialisation du graphe de base contenant 10 villes
         Graphe g = GraphManager.initDefaultGraph(null, null);
